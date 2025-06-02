@@ -46,15 +46,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   /**
    * PUBLIC_INTERFACE
-   * Insert a session/scan record into persistent storage (IPC bridge).
-   * Usage: window.electronAPI.dbInsertSession({type, label, data}); returns {success, id} or {success: false, error}
+   * Insert a session/scan record (for sessions of kind 'recon' or 'scan').
+   * Usage: window.electronAPI.dbSaveSession({type: "scan"|"recon", label, data}); returns {success, id} or {success: false, error}
    */
-  dbInsertSession: (session) => ipcRenderer.invoke('db-insert-session', session),
-
+  dbSaveSession: (session) => ipcRenderer.invoke('db-save-session', session),
   /**
    * PUBLIC_INTERFACE
-   * Retrieve saved session/scan history (IPC bridge).
-   * Usage: window.electronAPI.dbGetSessions({type, limit}); returns {success, sessions} or {success: false, error}
+   * Retrieve saved recon/scan session records.
+   * Usage: window.electronAPI.dbGetSessions({type?, limit?}); returns {success, sessions} or {success: false, error}
    */
   dbGetSessions: (opts) => ipcRenderer.invoke('db-get-sessions', opts),
 

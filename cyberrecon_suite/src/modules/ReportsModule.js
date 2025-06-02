@@ -127,7 +127,8 @@ export default function ReportsModule() {
       </div>
       <div className="description" style={{ marginTop: 14, color: "#babfc7" }}>
         <b>How it works:</b> Write reports, see instant preview, export as HTML/PDF.<br />
-        <span className="badge-faint" style={{ marginLeft: 9 }}>Premium UI</span>
+        <span className="badge-faint">Premium UI</span>
+        <span className="badge-faint" style={{ marginLeft: 9 }}>Feature Roadmap</span>
       </div>
     </div>
   );

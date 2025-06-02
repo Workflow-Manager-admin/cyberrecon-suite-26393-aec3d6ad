@@ -52,20 +52,14 @@ const findingSnippets = [
   }
 ];
 
-// Get session findings from the Debugger, Wordlist or other modules
-// For now, stub as "demo findings" unless backend sharing is implemented
-function getModuleFindings() {
-  return [
-    "- [ ] Exposed token found in main.js",
-    "- [ ] Admin endpoint accessible"
-  ];
-}
-
 export default function ReportsModule() {
   const [md, setMd] = useState(DEFAULT_MD);
-  const [images, setImages] = useState([]); // local images for preview/uploaded
+  const [images, setImages] = useState([]); // uploaded images: { name, url }
   const [exporting, setExporting] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importError, setImportError] = useState("");
   const fileInputRef = useRef();
+  const previewRef = useRef();
 
   // Handle image upload for screenshot embedding (dataURL for local/offline preview)
   const handleImageUpload = (e) => {
@@ -82,16 +76,14 @@ export default function ReportsModule() {
     const reader = new window.FileReader();
     reader.onload = evt => {
       setImages(imgs => [...imgs, { name: file.name, url: evt.target.result }]);
-      // Insert ![imageName](blob...) at caret if desirable
     };
     reader.readAsDataURL(file);
   };
 
-  // Insert image markdown at cursor (optional)
+  // Insert image markdown at cursor
   function insertImageMarkdown(imgIdx) {
     if (imgIdx >= 0 && images[imgIdx]) {
       const img = images[imgIdx];
-      // Insert ![Screenshot](img.url) at the cursor in textarea
       const textarea = document.getElementById("cybr-md-input");
       if (textarea) {
         const { selectionStart, selectionEnd } = textarea;
@@ -100,7 +92,6 @@ export default function ReportsModule() {
         const newMd =
           before + `\n![${img.name}](${img.url})\n` + after;
         setMd(newMd);
-        // Focus and set caret after the image markdown
         setTimeout(() => {
           textarea.focus();
           textarea.selectionStart = textarea.selectionEnd = before.length + `\n![${img.name}](${img.url})\n`.length;
@@ -129,24 +120,92 @@ export default function ReportsModule() {
     }
   }
 
-  // Insert findings table from other modules (stub/demo)
-  function insertModuleFindings() {
-    insertFindingSnippet(getModuleFindings().join("\n"));
+  // Async findings import from session cache (scan/recon)
+  async function importSessionFindings() {
+    setImportLoading(true);
+    setImportError("");
+    // Try scan sessions first, then recon if none
+    let sessions = [];
+    try {
+      let resp = await getSessions({ type: "scan", limit: 3 });
+      if (resp.success && Array.isArray(resp.sessions) && resp.sessions.length) {
+        sessions = resp.sessions;
+      } else {
+        resp = await getSessions({ type: "recon", limit: 3 });
+        if (resp.success && Array.isArray(resp.sessions) && resp.sessions.length) {
+          sessions = resp.sessions;
+        }
+      }
+    } catch (e) {
+      setImportLoading(false);
+      setImportError("Failed to load sessions.");
+      return;
+    }
+    if (!sessions.length) {
+      setImportLoading(false);
+      setImportError("No scan/recon findings in local session cache.");
+      return;
+    }
+    // Try to extract findings from the most recent session(s)
+    let findingsLines = [];
+    for (const sess of sessions) {
+      let src = "";
+      if (typeof sess.data === "object") {
+        // Try stdout, input, or similar fields
+        if (sess.data.stdout && typeof sess.data.stdout === "string") src = sess.data.stdout;
+        else if (sess.data.input && typeof sess.data.input === "string") src = sess.data.input;
+        else if (sess.data.text && typeof sess.data.text === "string") src = sess.data.text;
+        // If full scan output present, this will find
+      }
+      if (src && src.length > 12) {
+        // Results: extractFindings always returns {findings:[], summary:{}}
+        try {
+          const result = extractFindings(src);
+          if (Array.isArray(result.findings) && result.findings.length > 0) {
+            for (const f of result.findings) {
+              findingsLines.push(`- [ ] [${f.type}] ${f.value}`);
+            }
+          }
+        } catch (e) {
+          // Swallow parsing errors per session
+        }
+      }
+    }
+    if (!findingsLines.length) {
+      setImportError("No findings found in recent sessions.");
+    } else {
+      insertFindingSnippet(findingsLines.join("\n"));
+    }
+    setImportLoading(false);
   }
 
-  // Export HTML or PDF using Electron if available, else fallback to browser print
+  // Export HTML/PDF using premium tools if possible, else fallback
   async function handleExport(type) {
     setExporting(true);
-    // HTML export - robust
+    // HTML export is always available
     if (type === "html") {
-      const blob = new Blob(
-        [
-          `<!DOCTYPE html><html><head><meta charset="utf-8"><title>CyberRecon Report</title></head><body style="background:#181a20;color:#fff">${parseMarkdown(
-            md
-          )}</body></html>`
-        ],
-        { type: "text/html" }
-      );
+      // Export from the live preview, includes rendered markdown and theme
+      const html = `
+        <!DOCTYPE html>
+        <html><head>
+          <meta charset="utf-8">
+          <title>CyberRecon Report</title>
+          <style>
+            body { background: #181a20; color: #fff; font-family: 'Inter', 'sans-serif'; padding: 0 20px 20px 20px;}
+            h1,h2,h3 { color: #ff9800; }
+            pre { background: #232130; color: #feedb9; border-radius: 5px; border: 1px solid #333; padding:9px 13px;}
+            code { background: #232130; color: #ffca80; border-radius: 4px; padding: 0.1em 0.45em;}
+            blockquote { color: #ffa726; background: #24272f; padding: 6px 15px; border-left: 3px solid #ffa726; margin: 9px 2px;}
+            ul,ol { margin-bottom:1.7em;}
+            img { max-width: 460px;}
+          </style>
+        </head><body>
+          <div id="cybr-md-html-export">
+            ${document.getElementById("cybr-md-preview")?.innerHTML || ""}
+          </div>
+        </body></html>
+      `;
+      const blob = new Blob([html], { type: "text/html" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -154,19 +213,32 @@ export default function ReportsModule() {
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 80);
     } else if (type === "pdf") {
-      // If Electron IPC exists, try to call backend PDF print
-      if (window?.electron?.webFrame?.printToPDF) {
-        // This API is only present if contextIsolation is off (rare), so fallback
-        window.electron.webFrame.printToPDF({ printBackground: true });
+      // Try to render the preview panel into a PDF.
+      const previewNode = document.getElementById("cybr-md-preview");
+      if (previewNode) {
+        try {
+          const imgData = await htmlToImage.toPng(previewNode, { backgroundColor: "#181a20" });
+          const pdf = new jsPDF({
+            orientation: "p",
+            unit: "pt",
+            format: "a4"
+          });
+          // Fit image into A4: scale
+          const width = 580;
+          pdf.addImage(imgData, "PNG", 18, 18, width, 720, undefined, "FAST");
+          pdf.save("cyberrecon-report.pdf");
+        } catch (err) {
+          window.alert("PDF export failed. Try using browser Print as fallback.");
+          setTimeout(() => window.print(), 180);
+        }
       } else {
-        window.alert("PDF export prototype: Use Print > Save as PDF from your browser.");
+        window.alert("PDF export unavailable. Try using Print as fallback.");
         setTimeout(() => window.print(), 180);
       }
     }
     setExporting(false);
   }
 
-  // Polished, accessible, premium editor UI
   return (
     <div>
       <div className="panel" style={{ marginBottom: 32, maxWidth: 1200, marginLeft: "auto", marginRight: "auto" }}>
@@ -218,16 +290,18 @@ export default function ReportsModule() {
                 }}
                 aria-label="Upload screenshot/image for your report"
               />
-              <span
-                className="badge-faint"
-                style={{fontWeight:420,cursor:"pointer"}}
-                onClick={insertModuleFindings}
-                tabIndex={0}
-                title="Insert auto-generated findings from modules"
-                aria-label="Insert findings from modules"
+              <button
+                className="btn btn-ghost"
+                style={{marginRight:8, fontWeight:500, fontSize:"0.96em", minWidth:124}}
+                onClick={importSessionFindings}
+                disabled={importLoading}
+                type="button"
+                aria-label="Auto-import findings from session cache"
+                title="Auto-import findings from recent scan or recon sessions"
               >
-                +Findings from modules
-              </span>
+                {importLoading ? "Importing..." : "Auto-Import Findings"}
+              </button>
+              {importError && <span className="text-error" style={{fontSize:"0.98em"}}>{importError}</span>}
               {/* Quick snippets insert */}
               <div style={{display:"flex",gap:7}}>
                 {findingSnippets.map(f => (
@@ -260,13 +334,15 @@ export default function ReportsModule() {
               </div>
             )}
           </div>
-          {/* Live preview pane, full-featured */}
+          {/* Live preview pane, modern ReactMarkdown + theme */}
           <div style={{ flex: 2, minWidth: 290, background: "#1a1a1a", borderRadius: 7, padding: 21, marginLeft:10 }}>
             <div className="section-subtitle" style={{ marginBottom: 11 }}>
               Live Preview
             </div>
             <div
+              id="cybr-md-preview"
               className="codearea"
+              ref={previewRef}
               style={{
                 minHeight: 260,
                 maxHeight: 520,
@@ -275,8 +351,26 @@ export default function ReportsModule() {
                 overflowY: "auto",
                 border: "1.5px solid #3d414b"
               }}
-              dangerouslySetInnerHTML={{ __html: parseMarkdown(md) }}
-            />
+            >
+              <ReactMarkdown
+                children={md}
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  code({node, inline, className, children, ...props}) {
+                    return !inline
+                      ? <pre {...props} style={{background:'#232130', color:'#feedb9', borderRadius:5, padding:'9px 13px', margin:'8px 0', fontFamily:'JetBrains Mono,monospace', fontSize:'1em'}}>{children}</pre>
+                      : <code {...props} style={{background:'#232130', color:'#ffca80', borderRadius:4, padding:'0.1em 0.4em'}}>{children}</code>;
+                  },
+                  blockquote({ children, ...props }) {
+                    return <blockquote {...props} style={{color:'#ffa726', background:'#24272f', padding:'6px 15px', borderLeft:'3px solid #ffa726', margin:'9px 2px'}}>{children}</blockquote>;
+                  },
+                  img(props) {
+                    return <img {...props} style={{maxWidth:"100%", borderRadius:4}} alt={props.alt || "screenshot"} />;
+                  },
+                  // Other elements could be themed further here
+                }}
+              />
+            </div>
             {/* Display embedded images only (for offline preview, not PDF/HTML) */}
             {images.length > 0 && (
               <div style={{ marginTop: 20 }}>
@@ -299,7 +393,7 @@ export default function ReportsModule() {
             className="btn btn-ghost"
             style={{ marginLeft: "11px" }}
             onClick={() => handleExport("pdf")}
-            title="Export PDF using Print > Save as PDF"
+            title="Export PDF"
             disabled={exporting}
           >
             Export PDF
@@ -312,7 +406,7 @@ export default function ReportsModule() {
         <ul style={{color:"#babfc7",fontSize:"1.02em"}}>
           <li>Use <span className="badge-faint">Markdown</span> for formatting code, lists, links, tables.</li>
           <li>Upload screenshots/images. Click <b>Insert</b> to embed them into your report.</li>
-          <li>Quickly paste in findings from other modules or use instant snippets.</li>
+          <li>Auto-import findings from recent modules or use instant snippets.</li>
           <li style={{marginTop:8}}>Export your report as <span className="badge-faint">HTML</span> or <span className="badge-faint">PDF</span>.</li>
         </ul>
       </div>

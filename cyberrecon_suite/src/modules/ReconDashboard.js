@@ -3,7 +3,8 @@
  * Recon Dashboard module – triggers a sample CLI via Electron IPC and displays output.
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { saveSession, getSessions } from "./utils/ipcSession";
 
 /**
  * useCliCommand – React hook to request CLI operations via Electron IPC.

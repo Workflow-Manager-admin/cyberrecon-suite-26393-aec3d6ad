@@ -156,6 +156,88 @@ class CyberReconDB {
       this.sqlite.run(sql, (err) => (err ? reject(err) : resolve()));
     });
   }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Set an app-wide key/value setting (API keys, config, etc).
+   * Persists to a settings table (sqlite) or a settings object (lowdb json).
+   * @param {string} key
+   * @param {string} value
+   * @returns {Promise<void>}
+   */
+  async setSetting(key, value) {
+    if (!this.loaded) throw new Error('DB not initialized');
+    if (!key || typeof key !== 'string') throw new Error('Key must be string');
+    if (this.dbType === 'sqlite') {
+      await this._run(
+        `CREATE TABLE IF NOT EXISTS settings (
+          key TEXT PRIMARY KEY,
+          value TEXT
+        )`
+      );
+      return new Promise((resolve, reject) => {
+        this.sqlite.run(
+          'INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)',
+          [key, value],
+          function (err) {
+            if (err) return reject(err);
+            resolve();
+          }
+        );
+      });
+    } else if (this.dbType === 'lowdb') {
+      if (!this.lowdb.has('settings').value()) {
+        this.lowdb.set('settings', {}).write();
+      }
+      this.lowdb.set(`settings.${key}`, value).write();
+      return;
+    }
+    throw new Error('No available DB backend');
+  }
+
+  // PUBLIC_INTERFACE
+  /**
+   * Get a setting by key (or all if key omitted)
+   * @param {string} [key] If omitted, returns dictionary of all settings.
+   * @returns {Promise<string|Object|undefined>}
+   */
+  async getSetting(key) {
+    if (!this.loaded) throw new Error('DB not initialized');
+    if (this.dbType === 'sqlite') {
+      await this._run(
+        `CREATE TABLE IF NOT EXISTS settings (
+          key TEXT PRIMARY KEY,
+          value TEXT
+        )`
+      );
+      if (!key) {
+        // Return all key/values as a dictionary
+        return new Promise((resolve, reject) => {
+          this.sqlite.all('SELECT key, value FROM settings', [], (err, rows) => {
+            if (err) return reject(err);
+            const obj = {};
+            for (const row of rows) obj[row.key] = row.value;
+            resolve(obj);
+          });
+        });
+      }
+      return new Promise((resolve, reject) => {
+        this.sqlite.get(
+          'SELECT value FROM settings WHERE key = ?',
+          [key],
+          (err, row) => {
+            if (err) return reject(err);
+            resolve(row ? row.value : undefined);
+          }
+        );
+      });
+    } else if (this.dbType === 'lowdb') {
+      if (!this.lowdb.has('settings').value()) return key ? undefined : {};
+      const all = this.lowdb.get('settings').value() || {};
+      return key ? all[key] : all;
+    }
+    throw new Error('No available DB backend');
+  }
 }
 
 module.exports = new CyberReconDB();

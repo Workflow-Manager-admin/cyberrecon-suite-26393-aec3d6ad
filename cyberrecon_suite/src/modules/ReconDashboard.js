@@ -23,8 +23,12 @@ function useCliCommand() {
     setResult(null);
 
     try {
-      // window.electronAPI.runCliCommand is defined in preload.js
-      const res = await window.electronAPI.runCliCommand({
+      // window.electronAPI.runCliCommand is defined in preload.js for Electron.
+      // Add guard for browser context/injected stub.
+      const bridge = (typeof window !== "undefined" && window.electronAPI && typeof window.electronAPI.runCliCommand === "function")
+        ? window.electronAPI : null;
+      if (!bridge) throw new Error("Electron bridge API not available in this context.");
+      const res = await bridge.runCliCommand({
         command,
         args
       });

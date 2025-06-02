@@ -53,14 +53,18 @@ function getDemoReconData(lastResult) {
   };
 }
 
+// PUBLIC_INTERFACE
+/**
+ * ReconDashboard UI: Sample "Run Echo" button, displays stdout/stderr/code.
+ */
 export default function ReconDashboard() {
   const { runCliCommand, loading, result, error } = useCliCommand();
 
   // Session save/load state
-  const [saveStatus, setSaveStatus] = React.useState("");
-  const [history, setHistory] = React.useState([]);
-  const [historyLoading, setHistoryLoading] = React.useState(false);
-  const [fetchError, setFetchError] = React.useState("");
+  const [saveStatus, setSaveStatus] = useState("");
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [fetchError, setFetchError] = useState("");
 
   // Save demo session (recon) button handler
   async function handleSaveSession() {
@@ -93,7 +97,7 @@ export default function ReconDashboard() {
   }
 
   // Auto-fetch session history on mount
-  React.useEffect(() => {
+  useEffect(() => {
     handleFetchSessions();
     // eslint-disable-next-line
   }, []);

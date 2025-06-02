@@ -356,6 +356,28 @@ export default function BugBountyAggregator() {
         {error && (
           <div className="alert alert-error" style={{ marginBottom: 9 }}>
             <b>Error:</b> {error}
+            {error.toLowerCase().includes("api key") || error.toLowerCase().includes("settings") ? (
+              <span>
+                {" "}
+                <a
+                  href="#"
+                  onClick={e => {
+                    e.preventDefault();
+                    if (
+                      typeof window !== "undefined" &&
+                      window.dispatchEvent &&
+                      typeof Event === "function"
+                    ) {
+                      // Simulate module navigation to settings tab
+                      window.dispatchEvent(new CustomEvent("cyberrecon:gotoSettings"));
+                    }
+                  }}
+                  style={{ color: "#ffc436", marginLeft: "8px" }}
+                >
+                  Go to Settings
+                </a>
+              </span>
+            ) : null}
           </div>
         )}
         {Object.keys(platformErrors).length > 0 && (

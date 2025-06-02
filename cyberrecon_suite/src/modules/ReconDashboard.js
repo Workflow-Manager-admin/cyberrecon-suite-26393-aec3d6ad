@@ -11,10 +11,9 @@ import React, { useState } from "react";
  * Result: {stdout, stderr, code, error} from backend handler.
  */
 function useCliCommand() {
-  // Do NOT redeclare useState; it is already imported at the top
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = React.useState(false);
+  const [result, setResult] = React.useState(null);
+  const [error, setError] = React.useState(null);
 
   // PUBLIC_INTERFACE
   async function runCliCommand(command, args = []) {
@@ -60,15 +59,14 @@ function getDemoReconData(lastResult) {
   };
 }
 
-// PUBLIC_INTERFACE
 export default function ReconDashboard() {
   const { runCliCommand, loading, result, error } = useCliCommand();
 
   // Session save/load state
-  const [saveStatus, setSaveStatus] = useState("");
-  const [history, setHistory] = useState([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [fetchError, setFetchError] = useState("");
+  const [saveStatus, setSaveStatus] = React.useState("");
+  const [history, setHistory] = React.useState([]);
+  const [historyLoading, setHistoryLoading] = React.useState(false);
+  const [fetchError, setFetchError] = React.useState("");
 
   // Save demo session (recon) button handler
   async function handleSaveSession() {
@@ -101,7 +99,7 @@ export default function ReconDashboard() {
   }
 
   // Auto-fetch session history on mount
-  useEffect(() => {
+  React.useEffect(() => {
     handleFetchSessions();
     // eslint-disable-next-line
   }, []);

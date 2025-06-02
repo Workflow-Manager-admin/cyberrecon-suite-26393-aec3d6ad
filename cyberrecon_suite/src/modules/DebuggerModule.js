@@ -51,9 +51,9 @@ export default function DebuggerModule() {
 
   return (
     <div>
-      <div className="panel" style={{ marginBottom: "29px" }}>
-        <div className="panel-header">
-          JS Debugger &amp; Secret Extractor <span className="badge">Beta</span><span className="badge-faint" style={{marginLeft:7}}>Premium</span>
+      <div className="panel" style={{ marginBottom: "34px" }}>
+        <div className="panel-header" style={{display:"flex", alignItems:"center", gap:9}}>
+          JS Debugger &amp; Secret Extractor <span className="badge">Beta</span><span className="badge-faint">Premium</span>
         </div>
         <div className="description">
           Paste, edit, or upload JS/HTML. Auto-extract secrets, tokens, endpoints.

@@ -285,6 +285,51 @@ ipcMain.handle('db-get-sessions', async (_event, opts = {}) => {
   }
 });
 
+/**
+ * PUBLIC_INTERFACE
+ * IPC handlers for global settings (used for API key storage, config, etc).
+ * Use db.getSetting / db.setSetting. Only exposes/retrieves keys in a safe dictionary {apiKeys: {...}, ...}.
+ */
+ipcMain.handle('get-settings', async (_event) => {
+  try {
+    // Bulk-get all for settings dialog (never log or console sensitive info).
+    const settings = await db.getSetting();
+    // Shape sensitive keys as { apiKeys: { ... } }
+    function safeObj(s) {
+      if (!s || typeof s !== 'object') return { apiKeys: {} };
+      // Only expose recognized keys, in a namespace
+      const apiKeys = {};
+      ['amass', 'nuclei', 'hackerone', 'bugcrowd', 'intigriti'].forEach((k) => {
+        if (typeof s[`apiKey_${k}`] === 'string') apiKeys[k] = s[`apiKey_${k}`];
+      });
+      // Optionally merge proxy, plugins, etc, later
+      // Return at least API key bundle
+      return { apiKeys };
+    }
+    return { success: true, ...safeObj(settings) };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
+});
+
+ipcMain.handle('save-settings', async (_event, inputSettings) => {
+  try {
+    if (!inputSettings || typeof inputSettings !== 'object')
+      throw new Error('Invalid settings');
+    // Only allow saving API keys for specified platforms
+    if (inputSettings.apiKeys && typeof inputSettings.apiKeys === 'object') {
+      for (const k of ['amass', 'nuclei', 'hackerone', 'bugcrowd', 'intigriti']) {
+        const v = inputSettings.apiKeys[k];
+        if (typeof v === 'string')
+          await db.setSetting(`apiKey_${k}`, v);
+      }
+    }
+    // Add saving for other settings (proxy/plugins) if desired here
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
+});
 // Here you can add more handlers for modules (recon, scan, etc.)
 // Example (uncomment and write implementation as needed)
 // ipcMain.handle('run-amass', async (event, params) => { /* ... */ });

@@ -159,6 +159,20 @@ export default function SettingsManager() {
     e.preventDefault();
     setSaving(true);
     setStatus("Saving...");
+    // --- Validation for API keys (no blanks if filled, min 10 chars):
+    const invalids = [];
+    Object.entries(settings.apiKeys).forEach(([engine, val]) => {
+      if (val && val.trim() && val.length < 10) {
+        invalids.push(`${engine[0].toUpperCase() + engine.slice(1)}: Too short`);
+      }
+      // You could add more platform-specific validation here
+    });
+    if (invalids.length) {
+      setStatus("Invalid key(s): " + invalids.join(", "));
+      setSaving(false);
+      setTimeout(() => setStatus(""), 1800);
+      return;
+    }
     const ok = await saveSettings(settings);
     setStatus(ok ? "Settings saved!" : "Save failed!");
     setSaving(false);

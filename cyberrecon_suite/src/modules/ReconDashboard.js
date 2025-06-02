@@ -69,6 +69,7 @@ export default function ReconDashboard() {
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [fetchError, setFetchError] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Save demo session (recon) button handler
   async function handleSaveSession() {
@@ -111,8 +112,127 @@ export default function ReconDashboard() {
     runCliCommand("echo", ["hello world from Electron CLI!"]);
   };
 
+  // Premium slide-in sidebar with quick actions & history preview
+  const sidebarPanel = (
+    <aside
+      style={{
+        position: "fixed",
+        right: sidebarOpen ? 0 : "-360px",
+        top: 0,
+        height: "100vh",
+        width: 340,
+        background: "var(--color-bg-panel)",
+        boxShadow: "-6px 0 32px #000a, 0 1.5px 0 #150b0450",
+        borderLeft: "2px solid var(--color-accent50)",
+        zIndex: 100,
+        transition: "right 0.26s cubic-bezier(.41,1.2,.54,.98)",
+        padding: "34px 19px 24px 22px"
+      }}
+      aria-label="Recon Quick Panel"
+    >
+      <button
+        className="btn btn-ghost"
+        style={{ position: "absolute", left: -80, top: 33, fontWeight: 900 }}
+        onClick={() => setSidebarOpen(false)}
+        aria-label="Close quick panel"
+      >
+        ← Close
+      </button>
+      <div className="panel-header" style={{ marginTop: "1.5em" }}>
+        Recon Quick Actions
+      </div>
+      <div style={{ margin: "2em 0 1.4em 0" }}>
+        <button
+          className="btn btn-success"
+          style={{ width: "100%", marginBottom: "12px" }}
+          onClick={handleEchoClick}
+          disabled={loading}
+        >
+          {loading ? "Running..." : "Run Demo Scan"}
+        </button>
+        <button
+          className="btn"
+          style={{ width: "100%" }}
+          onClick={handleSaveSession}
+          disabled={loading}
+          title="Save current demo result to recon session history"
+        >
+          {saveStatus === "Saving..." ? "Saving..." : "Quick Save Session"}
+        </button>
+        <div className="description" style={{ marginTop: 13, color: "#fff" }}>
+          Jump to scanner, recon, or export (coming soon).
+        </div>
+      </div>
+      <hr className="divider" />
+      <div className="panel-header" style={{ marginBottom: "10px" }}>
+        History
+      </div>
+      <div style={{ maxHeight: "230px", overflowY: "auto" }}>
+        <table className="table" style={{ background: "#1b1d22", fontSize: "0.99em" }}>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Label</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {history.length === 0 && (
+              <tr>
+                <td colSpan={3} style={{ textAlign: "center", color: "#888" }}>
+                  (none)
+                </td>
+              </tr>
+            )}
+            {history.map((session) => (
+              <tr key={session.id || `pane-sess-${Math.random()}`}>
+                <td style={{ fontFamily: "monospace" }}>{session.id}</td>
+                <td>
+                  <span style={{ color: "#ffa726", fontWeight: 500 }}>
+                    {session.label || <span style={{ color: "#888" }}>(none)</span>}
+                  </span>
+                </td>
+                <td>
+                  {session.started_at
+                    ? new Date(session.started_at).toLocaleTimeString()
+                    : <span style={{ color: "#aaa" }}>(-)</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <hr className="divider" />
+      <div className="panel-header" style={{ marginBottom: "11px" }}>Tips</div>
+      <div className="description" style={{ color: "#babfc7" }}>
+        - Use <strong>Run Demo Scan</strong> to test IPC wiring.<br />
+        - Sessions are cached locally.<br />
+        - Export, graph, and more coming soon.
+      </div>
+    </aside>
+  );
+
   return (
-    <div>
+    <div style={{ position: "relative" }}>
+      {/* Slide-in Sidebar Trigger */}
+      <button
+        className="btn btn-ghost"
+        style={{
+          position: "fixed",
+          right: sidebarOpen ? 340 : 15,
+          top: 80,
+          zIndex: 101,
+          borderRadius: "8px 0 0 8px",
+          boxShadow: sidebarOpen ? "none" : "0 2px 8px 0 #0002",
+          transition: "right 0.25s"
+        }}
+        onClick={() => setSidebarOpen(s => !s)}
+        aria-label={sidebarOpen ? "Hide quick panel" : "Show quick panel"}
+      >
+        {sidebarOpen ? <>»</> : <>☰ Panel</>}
+      </button>
+      {sidebarPanel}
+
       <h2 style={{ marginTop: 0 }}>Recon Dashboard</h2>
       <p>
         This is a placeholder. Below is a test button that calls a secure backend CLI via Electron IPC.<br />

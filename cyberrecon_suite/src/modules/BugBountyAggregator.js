@@ -213,27 +213,68 @@ export default function BugBountyAggregator() {
     setError(null);
     setRateLimited(false);
     setPlatformErrors({});
-    let settings;
+    let apiKeys;
     try {
-      settings = await loadSettings();
-      if (!settings || !settings.apiKeys) throw new Error("No API keys found in settings");
+      apiKeys = await getApiKeys();
+      if (!apiKeys || typeof apiKeys !== "object") {
+        throw new Error("Settings/data structure error: API keys object not found.");
+      }
     } catch (e) {
-      setError("Failed to load API keys/settings");
+      setError("Failed to load API keys/settings.");
       setLoading(false);
       return;
     }
-    // Let all fetches happen in parallel
+
+    // Validate if any keys are missing or empty for platforms
+    // Platform: { label, keyName, minLength }
+    const keySpecs = [
+      { label: "HackerOne", key: "hackerone", minLength: 8 },
+      { label: "Bugcrowd", key: "bugcrowd", minLength: 8 },
+      { label: "Intigriti", key: "intigriti", minLength: 8 }
+    ];
+    const missingKeys = keySpecs
+      .filter(ks => !apiKeys[ks.key] || (typeof apiKeys[ks.key] === "string" && apiKeys[ks.key].trim() === ""))
+      .map(ks => ks.label);
+    const shortKeys = keySpecs
+      .filter(
+        ks =>
+          apiKeys[ks.key] &&
+          typeof apiKeys[ks.key] === "string" &&
+          apiKeys[ks.key].length > 0 &&
+          apiKeys[ks.key].length < ks.minLength
+      )
+      .map(ks => `${ks.label} (too short)`);
+
+    if (missingKeys.length === 3) {
+      setError(
+        "No API keys set for HackerOne, Bugcrowd, or Intigriti. Please add your API keys in the Settings."
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (shortKeys.length > 0) {
+      setError(
+        `Invalid API key(s): ${shortKeys.join(", ")}.`
+      );
+      setLoading(false);
+      return;
+    }
+
+    // Do NOT error out if only some platforms are missing keys (show partial results for platforms with valid keys)
+
+    // Let all fetches happen in parallel for platforms, blank key means public data only
     const [h1, bc, intg] = await Promise.all([
-      fetchHackerOnePrograms(settings.apiKeys.hackerone || ""),
-      fetchBugcrowdPrograms(settings.apiKeys.bugcrowd || ""),
-      fetchIntigritiPrograms(settings.apiKeys.intigriti || ""),
+      fetchHackerOnePrograms(apiKeys.hackerone || ""),
+      fetchBugcrowdPrograms(apiKeys.bugcrowd || ""),
+      fetchIntigritiPrograms(apiKeys.intigriti || ""),
     ]);
-    // Track platform fetch errors
+    // Track platform fetch errors ("API error" OR "Requires valid API key")
     const errors = {};
     if (h1.error) errors["HackerOne"] = h1.error;
     if (bc.error) errors["Bugcrowd"] = bc.error;
     if (intg.error) errors["Intigriti"] = intg.error;
-    // Detect if error is rate limit or forbidden
+    // Detect if error is rate limit or forbidden for any platform
     const anyRate =
       /rate.?limit|429|too.*many|forbidden|quota|throttle/i.test(
         (h1.error || "") + (bc.error || "") + (intg.error || "")

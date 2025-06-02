@@ -124,9 +124,9 @@ export default function DebuggerModule() {
         </table>
       </div>
       <div className="description" style={{marginTop:"18px", color:"#babfc7"}}>
-        <b>How it works:</b> This tool extracts API keys, secrets, endpoints using regex.
-        <br />More analyzers coming soon.
-        <span className="badge-faint" style={{ marginLeft: 9 }}>Premium UI</span>
+        <b>How it works&nbsp;–</b> Extracts API keys, secrets, and endpoints (Regex). <span className="badge-faint" style={{ marginLeft: 9 }}>Premium UI</span>
+        <br />
+        <span className="badge-faint" style={{ marginLeft: 7 }}>More extractor modules coming soon!</span>
       </div>
     </div>
   );

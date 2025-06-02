@@ -1,67 +1,81 @@
+:root {
+  --settings-bg: var(--color-bg-panel, #24272f);
+  --settings-border: 1.7px solid var(--border-color, #23272e);
+  --settings-radius: 10px;
+}
+
 .settings-panel {
-  box-shadow: 0 8px 32px #000a, 0 1.5px 0 #150b0450;
-  max-width: 640px;
+  max-width: 760px;
   margin: 0 auto;
+  background: var(--settings-bg);
+  border-radius: var(--settings-radius);
+  border: var(--settings-border);
+  padding: 32px 38px 26px 38px;
+  margin-bottom: 32px;
+  box-shadow: 0 6px 32px 0 #0006;
 }
 
 .settings-row {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  gap: 22px;
-  margin-bottom: 13px;
-}
-.settings-label {
-  min-width: 135px;
-  font-weight: 560;
-  color: var(--color-text-secondary);
-  margin-right: 7px;
-  letter-spacing: 0.01em;
-}
-.settings-table {
-  margin-top: 7px;
-  margin-bottom: 7px;
-}
-.settings-description {
-  font-size: 0.99em;
-  color: var(--color-text-faint);
-  margin-bottom: 5px;
+  gap: 16px;
+  margin-bottom: 14px;
 }
 
-.plugin-label {
-  color: var(--color-text);
-  font-weight: 500;
+.settings-label {
+  font-weight: 510;
+  width: 145px;
+  min-width: 120px;
+  color: var(--color-text-secondary);
+  text-align: right;
+  margin-right: 11px;
+  font-size: 1.03em;
+}
+
+.settings-table {
+  background: #23272e;
+  border-radius: 6px;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  margin-top: 18px;
+  box-shadow: 0 2px 8px #150b0450;
+}
+
+.settings-table th,
+.settings-table td {
+  padding: 9px 12px;
+  text-align: left;
   font-size: 1em;
+}
+
+.settings-table th {
+  background: var(--color-bg-panel, #2a2633);
+  font-weight: 620;
+  border-bottom: 2px solid var(--color-accent, #ff9800);
+  color: var(--color-accent);
+}
+
+.settings-table tr:last-child td {
+  border-bottom: none;
+}
+.settings-table tr:hover {
+  background: rgba(255,152,0,0.049);
 }
 
 .plugin-config-input {
-  width: 160px;
   background: var(--input-bg, #23272e);
-  color: var(--color-accent);
+  border: 1.2px solid #383c45;
+  border-radius: 5px;
+  color: var(--color-text);
+  padding: 8px 12px;
   font-size: 1em;
-  padding: 7px 7px;
-  border-radius: 4px;
-  border: 1.5px solid var(--input-border, #42454c);
-  outline: none;
-}
-.plugin-config-input:focus {
-  border-color: var(--color-accent);
-  background: #23272e;
-}
-.status-msg {
-  margin-left: 15px;
-  color: #cfae4c;
-  font-weight: 700;
 }
 
-@media (max-width: 650px) {
-  .settings-panel {
-    padding: 12px 3px !important;
-    min-width: 0;
-    width: 99vw;
-    max-width: 99vw;
-  }
-  .plugin-config-input {
-    width: 90px;
-  }
+.status-msg {
+  margin-left: 14px;
+  font-size: 1.03em;
+  font-weight: 600;
+  color: #ffc436;
+  letter-spacing: 0.011em;
 }

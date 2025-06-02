@@ -134,8 +134,9 @@ export default function BountyModule() {
         </table>
       </div>
       <div className="description" style={{ marginTop: "18px", color: "#babfc7" }}>
-        <b>Tip:</b> Click <span className="badge btn-success" style={{ fontWeight: 500 }}>+ Recon</span> to launch recon on any program's assets.
+        <b>Tip:</b> Click <span className="badge btn-success" style={{ fontWeight: 500 }}>+ Recon</span> to add target domains.
         <span className="badge-faint" style={{ marginLeft: 13 }}>Premium UI</span>
+        <span className="badge-faint" style={{ marginLeft: 13 }}>Feature Roadmap</span>
       </div>
     </div>
   );

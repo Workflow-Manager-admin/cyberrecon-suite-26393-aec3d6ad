@@ -2,6 +2,23 @@
 
 This project provides a minimal React template with a clean, modern UI and minimal dependencies.
 
+---
+
+## Electron IPC CLI Integration Pattern
+
+### Run CLI tools from React via Electron backend
+
+- Use `window.electronAPI.runCliCommand({command: 'echo', args: ['hello world']})` in your React modules to run a whitelisted CLI tool and retrieve its output.
+- Only explicitly allowed commands (see `allowedCommands` in `main.js`) can be run for security reasons.
+- To add integration for a new tool (e.g., Amass, Nuclei, etc.):
+  1. Add an IPC handler (`ipcMain.handle('run-amass', ...)`) in `main.js`.
+  2. Add a renderer preload bridge (`runAmass: (params) => ipcRenderer.invoke('run-amass', params)`) in `preload.js`.
+  3. Call the new method in React: `window.electronAPI.runAmass({...params})`.
+
+**Security Reminder:** Never run arbitrary shell or CLI commands; always strictly whitelist supported tools and sanitize arguments.
+
+---
+
 ## Features
 
 - **Lightweight**: No heavy UI frameworks - uses only vanilla CSS and React

@@ -50,7 +50,4 @@ export async function ipcNuclei(args = []) {
  * @param {string[]} args - CLI arguments for nuclei.
  * @returns {Promise<{stdout: string, stderr: string, code: number, error: string}>}
  */
-export async function ipcNuclei(args = []) {
-  // Assume window.electronAPI.runNuclei defined in preload.js
-  return await window.electronAPI.runNuclei({ args });
-}
+

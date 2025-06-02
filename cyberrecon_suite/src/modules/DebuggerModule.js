@@ -17,7 +17,7 @@ function extractTokens(text) {
   const flags = [...text.matchAll(/FLAG\{[A-Za-z0-9_]+\}/g)].map(m => m[0]);
   const urls = [
     ...text.matchAll(
-      /https?:\/\/(?:[\w-]+\.)+[a-z]{2,}(?::\d{1,5})?\/[\w\-./?%&=]*/gi
+      /https?:\/\/(?:[\w-]+\.)+[a-z]{2,}(?::\d{1,5})?\/[\w\-.\/?%&=]*/gi
     )
   ].map(m => m[0]);
   return { apiKeys, flags, urls };

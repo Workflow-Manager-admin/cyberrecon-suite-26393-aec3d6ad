@@ -11,6 +11,7 @@ import React, { useState } from "react";
  * Result: {stdout, stderr, code, error} from backend handler.
  */
 function useCliCommand() {
+  // Do NOT redeclare useState; it is already imported at the top
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);

@@ -67,13 +67,16 @@
 }
 
 .sidebar__nav-btn:focus-visible {
-  box-shadow: 0 0 0 2px var(--sidebar-accent);
+  box-shadow: 0 0 0 2.5px var(--sidebar-accent), 0 1.5px 0 rgba(40,38,2,0.19);
+  z-index: 2;
+  outline: none;
 }
 
 .sidebar__nav-btn--active,
 .sidebar__nav-btn:hover {
-  background: var(--sidebar-hover);
+  background: linear-gradient(90deg, var(--sidebar-hover), rgba(255,152,0,0.059));
   color: var(--sidebar-accent);
+  font-weight: 600;
 }
 
 .sidebar__nav-btn--active::before {

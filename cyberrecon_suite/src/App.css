@@ -301,7 +301,67 @@ input[readonly], input:disabled, select:disabled, textarea:disabled {
   margin: 25px 0 18px 0;
 }
 
-/* Scrollbar styling for dark background */
+/* Section heading, title, subtitle, hint, etc. */
+.section-title, .title {
+  font-size: 1.58em;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 0.24em;
+  color: var(--color-accent);
+}
+.section-subtitle, .subtitle {
+  font-size: 1.16em;
+  font-weight: 500;
+  margin-bottom: 0.45em;
+  color: var(--color-accent50);
+  opacity: 0.87;
+}
+.section-hint, .hint, .description {
+  font-size: 1em;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.65em;
+}
+
+/* In-app alert/info/warning message */
+.alert, .alert-success, .alert-error, .alert-info {
+  border-radius: 5px;
+  padding: 11px 18px;
+  margin: 10px 0;
+  font-size: 1.02em;
+  font-weight: 500;
+}
+.alert-success {
+  background: #16261d;
+  color: var(--color-success);
+  border: 1px solid #2e846e;
+}
+.alert-error {
+  background: #2b1014;
+  color: var(--color-error);
+  border: 1px solid #902d2b;
+}
+.alert-info {
+  background: #20263b;
+  color: #ffe381;
+  border: 1px solid #ffc436;
+}
+
+/* Accessible text utility */
+.text-accent { color: var(--color-accent); }
+.text-faint  { color: var(--color-text-faint); }
+.text-error  { color: var(--color-error); }
+.text-success{ color: var(--color-success); }
+.text-muted  { color: var(--color-text-secondary); }
+.text-bold   { font-weight: 700; }
+.text-mono   { font-family: 'JetBrains Mono', 'Fira Mono', 'Menlo', 'monospace'; }
+
+a, .link {
+  color: var(--color-accent);
+  text-decoration: underline;
+  transition: color 0.13s;
+}
+a:hover, .link:hover { color: var(--color-accent-hover); }
+
 ::-webkit-scrollbar {
   width: 10px;
   background: var(--color-bg);
@@ -309,6 +369,12 @@ input[readonly], input:disabled, select:disabled, textarea:disabled {
 ::-webkit-scrollbar-thumb {
   background: var(--scrollbar);
   border-radius: 7px;
+}
+
+@media (max-width: 600px) {
+  .main-content, .tabcontainer__content {
+    padding: 8px !important;
+  }
 }
 
 /* Light mode override (future enhancement)

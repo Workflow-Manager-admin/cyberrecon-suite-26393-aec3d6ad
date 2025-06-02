@@ -2,16 +2,23 @@
   "name": "react-kavia",
   "version": "0.1.0",
   "private": true,
+  "main": "main.js",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "^5.0.1"
   },
+  "devDependencies": {
+    "electron": "^28.2.3",
+    "cross-env": "^7.0.3"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "electron:start": "cross-env NODE_ENV=development electron .",
+    "electron:prod": "npm run build && cross-env NODE_ENV=production electron ."
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -27,8 +34,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "cross-env": "^7.0.3"
   }
 }

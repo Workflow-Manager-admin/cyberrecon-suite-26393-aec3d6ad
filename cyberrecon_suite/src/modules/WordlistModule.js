@@ -71,9 +71,9 @@ export default function WordlistModule() {
 
   return (
     <div>
-      <div className="panel" style={{ marginBottom: "26px" }}>
-        <div className="panel-header">
-          Wordlist Generator <span className="badge">Beta</span><span className="badge-faint" style={{marginLeft:7}}>Premium</span>
+      <div className="panel" style={{ marginBottom: "32px" }}>
+        <div className="panel-header" style={{display:"flex",alignItems:"center",gap:9}}>
+          Wordlist Generator <span className="badge">Beta</span><span className="badge-faint">Premium</span>
         </div>
         <div className="description">
           Paste or upload text/code. Extract probable keywords using simple TF-IDF (offline).

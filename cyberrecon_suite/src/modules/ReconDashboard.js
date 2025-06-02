@@ -45,7 +45,7 @@ function useCliCommand() {
  * PUBLIC_INTERFACE
  * ReconDashboard UI: Sample "Run Echo" button, displays stdout/stderr/code.
  */
-import { useState, useEffect } from "react";
+import React from "react";
 import { saveSession, getSessions } from "./utils/ipcSession";
 
 // Demo recon data for session save

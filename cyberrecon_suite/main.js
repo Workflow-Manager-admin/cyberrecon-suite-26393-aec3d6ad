@@ -53,10 +53,56 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
-// PUBLIC_INTERFACE
-// IPC skeleton (securely handle channels in preload.js)
+/**
+ * PUBLIC_INTERFACE
+ * IPC skeleton (securely handle channels in preload.js)
+ */
+
+// Simple ping for diagnostics
 ipcMain.handle('ping', async (_event, ...args) => {
   return 'pong';
+});
+
+/**
+ * PUBLIC_INTERFACE
+ * IPC handler for running generic CLI commands.
+ * Expects: { command: string, args?: string[] }
+ * Only allows certain commands (extend allowedCommands as needed for safety).
+ * Returns: { stdout, stderr, code }
+ */
+const allowedCommands = ['echo']; // extend this array with safe/expected CLI commands
+
+ipcMain.handle('run-cli-command', async (_event, params) => {
+  try {
+    if (!params || typeof params.command !== 'string') {
+      throw new Error("Invalid parameters");
+    }
+
+    // Only allow commands explicitly whitelisted
+    const target = params.command.trim().toLowerCase();
+    if (!allowedCommands.includes(target)) {
+      return { error: 'Command not allowed', code: 403 };
+    }
+
+    // Sanitize arguments
+    const args = Array.isArray(params.args)
+      ? params.args.filter(arg => typeof arg === 'string')
+      : [];
+    const cmdline = [params.command, ...args].join(' ');
+
+    return new Promise((resolve) => {
+      exec(cmdline, { timeout: 30000, maxBuffer: 1024 * 200 }, (error, stdout, stderr) => {
+        resolve({
+          stdout,
+          stderr,
+          code: error ? (error.code || 1) : 0,
+          error: error ? error.message : null
+        });
+      });
+    });
+  } catch (err) {
+    return { error: String(err), code: 500, stdout: '', stderr: '' };
+  }
 });
 
 // Here you can add more handlers for modules (recon, scan, etc.)

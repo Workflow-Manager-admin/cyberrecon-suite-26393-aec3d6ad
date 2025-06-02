@@ -11,41 +11,131 @@ contextBridge.exposeInMainWorld('electronAPI', {
    * Usage in React: window.electronAPI.ping()
    * @returns {Promise<string>} 'pong'
    */
-  ping: () => ipcRenderer.invoke('ping'),
+  ping: () => {
+    try {
+      if (!ipcRenderer) throw new Error("IPC not available");
+      return ipcRenderer.invoke('ping');
+    } catch (err) {
+      return Promise.resolve("pong (bridge error)");
+    }
+  },
 
-  // ... (previous handlers unchanged)
-
-  runCliCommand: (params) => ipcRenderer.invoke('run-cli-command', params),
-  runMasscan: (params) => ipcRenderer.invoke('run-masscan', params),
-  runNuclei: (params) => ipcRenderer.invoke('run-nuclei', params),
-  dbSaveSession: (session) => ipcRenderer.invoke('db-save-session', session),
-  dbGetSessions: (opts) => ipcRenderer.invoke('db-get-sessions', opts),
-  getSettings: () => ipcRenderer.invoke('get-settings'),
-  saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
+  // --- CLI/Scanner/Settings IPC ---
+  runCliCommand: (params) => {
+    try {
+      if (!ipcRenderer) throw new Error("IPC not available");
+      return ipcRenderer.invoke('run-cli-command', params);
+    } catch (err) {
+      return Promise.resolve({ stdout: "", stderr: "IPC bridge unavailable", code: 1, error: "Electron bridge unavailable" });
+    }
+  },
+  runMasscan: (params) => {
+    try {
+      if (!ipcRenderer) throw new Error("IPC not available");
+      return ipcRenderer.invoke('run-masscan', params);
+    } catch (err) {
+      return Promise.resolve({ stdout: "", stderr: "IPC bridge unavailable", code: 1, error: "Electron bridge unavailable" });
+    }
+  },
+  runNuclei: (params) => {
+    try {
+      if (!ipcRenderer) throw new Error("IPC not available");
+      return ipcRenderer.invoke('run-nuclei', params);
+    } catch (err) {
+      return Promise.resolve({ stdout: "", stderr: "IPC bridge unavailable", code: 1, error: "Electron bridge unavailable" });
+    }
+  },
+  dbSaveSession: (session) => {
+    try {
+      if (!ipcRenderer) throw new Error("IPC not available");
+      return ipcRenderer.invoke('db-save-session', session);
+    } catch (err) {
+      return Promise.resolve({ success: false, error: "Electron session API unavailable" });
+    }
+  },
+  dbGetSessions: (opts) => {
+    try {
+      if (!ipcRenderer) throw new Error("IPC not available");
+      return ipcRenderer.invoke('db-get-sessions', opts);
+    } catch (err) {
+      return Promise.resolve({ success: false, error: "Electron session API unavailable" });
+    }
+  },
+  getSettings: () => {
+    try {
+      if (!ipcRenderer) throw new Error("IPC not available");
+      return ipcRenderer.invoke('get-settings');
+    } catch (err) {
+      return Promise.resolve({ success: true, apiKeys: { amass: "", nuclei: "", hackerone: "", bugcrowd: "", intigriti: "" } });
+    }
+  },
+  saveSettings: (settings) => {
+    try {
+      if (!ipcRenderer) throw new Error("IPC not available");
+      return ipcRenderer.invoke('save-settings', settings);
+    } catch (err) {
+      return Promise.resolve({ success: false, error: "Electron settings API unavailable" });
+    }
+  },
 
   // PUBLIC_INTERFACE
-  // Exploitation Toolkit Proxy IPC handlers
+  // Exploitation Toolkit Proxy IPC handlers - robust error guarding
   /**
    * Starts the proxy server for exploitation (returns {ok,port,error?})
    * Usage: window.electronAPI.proxyStart({target,port})
    */
-  proxyStart: (params) => ipcRenderer.invoke('proxy-start', params),
+  proxyStart: (params) => {
+    try {
+      if (!ipcRenderer) throw new Error("IPC not available");
+      return ipcRenderer.invoke('proxy-start', params);
+    } catch (err) {
+      return Promise.resolve({ ok: false, port: 0, error: "Proxy API bridge unavailable or Electron required" });
+    }
+  },
   /**
    * Stops the proxy server ({ok,error?})
    */
-  proxyStop: () => ipcRenderer.invoke('proxy-stop'),
+  proxyStop: () => {
+    try {
+      if (!ipcRenderer) throw new Error("IPC not available");
+      return ipcRenderer.invoke('proxy-stop');
+    } catch (err) {
+      return Promise.resolve({ ok: false, error: "Proxy API bridge unavailable or Electron required" });
+    }
+  },
   /**
    * Get the current proxy session timeline as array of {id, ts, reqRaw, resRaw, ...}
    */
-  proxyGetSessions: () => ipcRenderer.invoke('proxy-get-sessions'),
+  proxyGetSessions: () => {
+    try {
+      if (!ipcRenderer) throw new Error("IPC not available");
+      return ipcRenderer.invoke('proxy-get-sessions');
+    } catch (err) {
+      return Promise.resolve({ ok: false, timeline: [], error: "Proxy API bridge unavailable or Electron required" });
+    }
+  },
   /**
    * Replay previous request (optionally modified req string); returns {ok,resRaw,reqRaw,error?}
    */
-  proxyReplayRequest: (params) => ipcRenderer.invoke('proxy-replay-request', params),
+  proxyReplayRequest: (params) => {
+    try {
+      if (!ipcRenderer) throw new Error("IPC not available");
+      return ipcRenderer.invoke('proxy-replay-request', params);
+    } catch (err) {
+      return Promise.resolve({ ok: false, resRaw: "", reqRaw: "", error: "Proxy API bridge unavailable or Electron required" });
+    }
+  },
   /**
    * Clear proxy session history (for UI)
    */
-  proxyClearSessions: () => ipcRenderer.invoke('proxy-clear-sessions'),
+  proxyClearSessions: () => {
+    try {
+      if (!ipcRenderer) throw new Error("IPC not available");
+      return ipcRenderer.invoke('proxy-clear-sessions');
+    } catch (err) {
+      return Promise.resolve({ ok: false, error: "Proxy API bridge unavailable or Electron required" });
+    }
+  },
 });
 
 ipcRenderer.on('proxy-session-added', (_event, session) => {

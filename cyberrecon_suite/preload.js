@@ -82,6 +82,18 @@ if (typeof window !== "undefined" && !window.electronAPI) {
       ({ success: true, apiKeys: { amass: "", nuclei: "", hackerone: "", bugcrowd: "", intigriti: "" } }),
     saveSettings: async () =>
       ({ success: false, error: "Electron settings API unavailable (web)" }),
+
+    // --- Proxy/exploitation module APIs (stubs for browser context) ---
+    proxyStart: async () =>
+      ({ ok: false, port: 0, error: "Proxy API unavailable in browser build (Electron required)" }),
+    proxyStop: async () =>
+      ({ ok: false, error: "Proxy API unavailable in browser build (Electron required)" }),
+    proxyGetSessions: async () =>
+      ({ ok: false, timeline: [], error: "Proxy API unavailable in browser build (Electron required)" }),
+    proxyReplayRequest: async () =>
+      ({ ok: false, resRaw: "", reqRaw: "", error: "Proxy API unavailable in browser build (Electron required)" }),
+    proxyClearSessions: async () =>
+      ({ ok: false, error: "Proxy API unavailable in browser build (Electron required)" }),
     // Any more future API additions here...
   };
   window.theme = window.theme || { isDark: true };

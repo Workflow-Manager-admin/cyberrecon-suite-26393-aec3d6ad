@@ -15,7 +15,7 @@ export default function TabContainer({ moduleKey, children }) {
     debugger: "JS Debugger",
     wordlist: "Wordlist Generator",
     reports: "Report Generator",
-    bounty: "Bug Bounty",
+    bounty: "Bug Bounty Aggregator",
     settings: "Settings"
   };
 

@@ -63,23 +63,64 @@ body {
   }
 }
 
-/* Buttons - modern accent */
+/* Buttons - accent styling and variants */
 .btn {
   background-color: var(--color-accent);
-  color: white;
+  color: var(--color-text);
   border: none;
   border-radius: 4px;
-  padding: 10px 20px;
+  padding: 10px 22px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.17s;
-  box-shadow: 0 1px 0 #0003;
+  user-select: none;
+  transition: background 0.17s, box-shadow 0.12s, border 0.13s;
+  box-shadow: 0 2px 8px 0 #0002;
+  outline: none;
+  position: relative;
+  letter-spacing: 0.01em;
+  min-width: 98px;
+  min-height: 38px;
 }
-
+.btn:active {
+  background-color: var(--color-accent-dim);
+}
 .btn:hover, .btn:focus-visible {
   background-color: var(--color-accent-hover);
-  outline: none;
+  outline: 2px solid var(--color-accent50);
+  outline-offset: 1px;
+}
+.btn[disabled], .btn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  background: var(--color-accent-dim);
+  color: #ececec;
+  box-shadow: none;
+}
+
+/* Secondary / ghost button styles */
+.btn-ghost {
+  background: none;
+  border: 1.5px solid var(--color-accent);
+  color: var(--color-accent);
+}
+.btn-ghost:hover, .btn-ghost:focus-visible {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+/* Button (danger/success) signals */
+.btn-error {
+  background: var(--color-error);
+}
+.btn-error:hover, .btn-error:focus-visible {
+  background: #dd4050;
+}
+.btn-success {
+  background: var(--color-success);
+}
+.btn-success:hover, .btn-success:focus-visible {
+  background: #2bb272;
 }
 
 /* Utility classes */

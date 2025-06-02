@@ -24,6 +24,22 @@ contextBridge.exposeInMainWorld('electronAPI', {
    */
   runCliCommand: (params) => ipcRenderer.invoke('run-cli-command', params),
 
+  /**
+   * PUBLIC_INTERFACE
+   * Run Masscan from the renderer (secure, arg-sanitized).
+   * Usage: window.electronAPI.runMasscan({ args: [...] })
+   * Returns: Promise<{stdout, stderr, code, error}>
+   */
+  runMasscan: (params) => ipcRenderer.invoke('run-masscan', params),
+
+  /**
+   * PUBLIC_INTERFACE
+   * Run Nuclei from the renderer (secure, arg-sanitized).
+   * Usage: window.electronAPI.runNuclei({ args: [...] })
+   * Returns: Promise<{stdout, stderr, code, error}>
+   */
+  runNuclei: (params) => ipcRenderer.invoke('run-nuclei', params),
+
   // Template for adding secure backend methods for modules (recon, scan, etc)
   // Example:
   // runAmass: (params) => ipcRenderer.invoke('run-amass', params),

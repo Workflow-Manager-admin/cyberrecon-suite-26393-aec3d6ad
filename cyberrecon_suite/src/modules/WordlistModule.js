@@ -138,7 +138,8 @@ export default function WordlistModule() {
       </div>
       <div className="description" style={{ marginTop: "16px", color: "#babfc7" }}>
         <b>How it works:</b> Runs basic TF-IDF to pick candidate words for your custom wordlist.<br />
-        Export and use with your attack tools.<span className="badge-faint" style={{ marginLeft: 9 }}>Premium UI</span>
+        <span className="badge-faint">Feature Enhancements Soon</span>
+        <span className="badge-faint" style={{ marginLeft: 9 }}>Premium UI</span>
       </div>
     </div>
   );

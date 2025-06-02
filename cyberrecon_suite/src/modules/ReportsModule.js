@@ -69,7 +69,7 @@ export default function ReportsModule() {
     <div>
       <div className="panel" style={{ marginBottom: 24 }}>
         <div className="panel-header">
-          Markdown Report Generator <span className="badge">Beta</span>
+          Report Generator <span className="badge">Beta</span><span className="badge-faint" style={{marginLeft:7}}>Premium</span>
         </div>
         <div className="description">
           Write your pentest report with Markdown. Upload screenshots, live preview, and export.

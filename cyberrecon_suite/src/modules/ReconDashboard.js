@@ -11,9 +11,9 @@ import React, { useState } from "react";
  * Result: {stdout, stderr, code, error} from backend handler.
  */
 function useCliCommand() {
-  const [loading, setLoading] = React.useState(false);
-  const [result, setResult] = React.useState(null);
-  const [error, setError] = React.useState(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
 
   // PUBLIC_INTERFACE
   async function runCliCommand(command, args = []) {
@@ -39,13 +39,6 @@ function useCliCommand() {
 
   return { runCliCommand, loading, result, error };
 }
-
-/**
- * PUBLIC_INTERFACE
- * ReconDashboard UI: Sample "Run Echo" button, displays stdout/stderr/code.
- */
-import React from "react";
-import { saveSession, getSessions } from "./utils/ipcSession";
 
 // Demo recon data for session save
 function getDemoReconData(lastResult) {

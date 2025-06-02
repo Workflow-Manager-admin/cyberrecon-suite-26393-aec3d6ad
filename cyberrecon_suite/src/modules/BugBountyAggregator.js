@@ -10,6 +10,27 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { loadSettings } from "./SettingsManager";
 
+// PUBLIC_INTERFACE
+// Utility function to get the API keys object from settings via Electron (secure) or browser fallback
+async function getApiKeys() {
+  try {
+    if (window.electronAPI?.getSettings) {
+      const res = await window.electronAPI.getSettings();
+      if (res && res.success && res.apiKeys) {
+        return res.apiKeys;
+      }
+      return {};
+    }
+    // Browser/localStorage fallback (dev mode)
+    const raw = window.localStorage.getItem("cyberrecon-suite-settings");
+    let parsed = {};
+    try { parsed = raw ? JSON.parse(raw) : {}; } catch {}
+    if (parsed && parsed.apiKeys) return parsed.apiKeys;
+    return {};
+  } catch {
+    return {};
+  }
+}
 // Util: Detect platform
 function isElectron() {
   return (

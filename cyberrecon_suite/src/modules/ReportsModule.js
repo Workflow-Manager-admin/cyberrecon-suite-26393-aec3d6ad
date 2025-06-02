@@ -3,12 +3,13 @@
  * Report Generator – Professional Markdown editor w/ live preview, screenshot upload, findings insert, PDF/HTML export.
  */
 import React, { useState, useRef } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { getSessions } from "./utils/ipcSession";
+import { extractFindings } from "./DebuggerModule";
+import * as htmlToImage from "html-to-image";
+import jsPDF from "jspdf";
 
-// Try to use a robust markdown parser if available, else fallback
-let marked = null;
-try {
-  marked = require("marked");
-} catch {}
 const DEFAULT_MD = `# Vulnerability Report: Demo App
 
 ## Executive Summary
@@ -30,22 +31,6 @@ Content-Type: application/json
 {"user":"admin", "pass":"admin123"}
 \`\`\`
 `;
-
-const parseMarkdown = (md) => {
-  if (marked) return marked.parse(md);
-  // Fallback/minimal parser
-  let html = md
-    .replace(/^# (.+)/gm, "<h2>$1</h2>")
-    .replace(/^## (.+)/gm, "<h3>$1</h3>")
-    .replace(/^- \[x\] (.+)/gm, '<li style="color:#84ff9e;">✔️ $1</li>')
-    .replace(/^- \[ \] (.+)/gm, '<li style="color:#ffd699;">☐ $1</li>')
-    .replace(/^- (.+)/gm, '<li>$1</li>')
-    .replace(/```[a-zA-Z]*(.*?)```/gs, '<pre>$1</pre>')
-    .replace(/> _([^_]*)_/gm, '<blockquote style="color:#ffa726;">$1</blockquote>');
-  html = html.replace(/(<li[\s\S]+<\/li>)/g, "<ul>$1</ul>");
-  html = html.replace(/\n/g, "<br/>");
-  return html;
-};
 
 const findingSnippets = [
   {

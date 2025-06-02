@@ -1,0 +1,4 @@
+{
+    "command": "PORT=<port> BROWSER=none npm start",
+    "working_directory": "/home/kavia/workspace/code-generation/cyberrecon-suite-26393-aec3d6ad/cyberrecon_suite"
+}

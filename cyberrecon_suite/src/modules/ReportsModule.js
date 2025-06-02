@@ -119,7 +119,7 @@ export default function ReportsModule() {
         </div>
       </div>
       <div className="panel" style={{marginBottom:0}}>
-        <div className="panel-header">Upload Screenshots <span className="badge-faint">Demo</span></div>
+        <div className="panel-header">Upload Screenshots <span className="badge-faint" style={{marginLeft:8}}>Coming Soon</span></div>
         <div>
           <input type="file" accept="image/*" disabled style={{ opacity: 0.5 }} />
           <span style={{marginLeft:12, color:"#babfc7"}}>(Feature coming soon)</span>

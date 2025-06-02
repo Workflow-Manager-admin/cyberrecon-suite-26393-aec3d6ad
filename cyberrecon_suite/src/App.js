@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./App.css";
+import "./premium-theme.css";
 import "./components/Sidebar.css";
 import "./components/TabContainer.css";
 import Sidebar from "./components/Sidebar";

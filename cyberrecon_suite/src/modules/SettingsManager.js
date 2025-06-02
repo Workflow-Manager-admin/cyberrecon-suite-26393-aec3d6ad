@@ -72,7 +72,10 @@ function PluginRow({ plugin, onToggle, onConfigChange }) {
 export default function SettingsManager() {
   // ---- State
   const [settings, setSettings] = useState({
-    apiKeys: { amass: "", nuclei: "", },
+    apiKeys: { 
+      amass: "", nuclei: "",
+      hackerone: "", bugcrowd: "", intigriti: "",
+    },
     proxy: { enabled: false, host: "", port: "" },
     plugins: [
       // Example plugins to demonstrate manager (can be extended)
@@ -86,8 +89,15 @@ export default function SettingsManager() {
   // ---- Load settings on mount
   useEffect(() => {
     let mounted = true;
+    // Additional merge: ensure apiKeys always has all keys for new fields
     loadSettings().then(loaded => {
-      if (loaded && mounted) setSettings(s => ({ ...s, ...loaded }));
+      if (loaded && mounted) {
+        setSettings(s => ({
+          ...s,
+          ...loaded,
+          apiKeys: { ...s.apiKeys, ...(loaded.apiKeys || {}) } // always merge new keys
+        }));
+      }
     });
     return () => { mounted = false; };
   }, []);

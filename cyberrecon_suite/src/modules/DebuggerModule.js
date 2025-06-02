@@ -8,7 +8,7 @@
   * - Polished UI for clarity, accessibility, focus management.
   */
  import React, { useState, useRef } from "react";
-
+ 
  // Demo input for onboarding users
  const DEMO_JS = `
  // Paste JS/HTML containing secrets, tokens, endpoints, etc.
@@ -22,7 +22,7 @@
  // GCP: "AIzaSyA2QHFT4AFiAiSX1TQBcEXAMPLEKEY"
  // AWS AKIAEXAMPLEAKIA, amzn secret = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYzEXAMPLEKEY"
  `;
-
+ 
  // Regex patterns for various secrets/tokens (expandable/configurable)
  const REGEX_PATTERNS = [
    // API keys for major platforms, basic generic
@@ -33,7 +33,7 @@
    // JWT
    { type: "JWT", re: /([A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,}\.[A-Za-z0-9-_]{10,})/g },
    // Bearer
-   { type: "Bearer Token", re: /Bearer\s+([A-Za-z0-9\-\._~\+\/]+=*)/gi },
+   { type: "Bearer Token", re: /Bearer\s+([A-Za-z0-9\-._~\+\/]+=*)/gi },
    // Secret/Flag
    { type: "Secret Flag", re: /FLAG\{[A-Za-z0-9_:\-@!#\$%&\*\(\)]+\}/g },
    { type: "Secret Flag", re: /CTF\{[^\}]{4,100}\}/g },
@@ -50,9 +50,9 @@
    // IP/Ports (exclude local addresses)
    { type: "IP Endpoint", re: /\b(?!127\.|10\.|192\.168\.|172\.(?:1[6-9]|2[0-9]|3[0-1])\.)(?:\d{1,3}\.){3}\d{1,3}:\d{2,6}\b/g }
  ];
-
+ 
  // PUBLIC_INTERFACE
- function extractFindings(text) {
+ export function extractFindings(text) {
    // Map to sets for deduplication
    const res = {};
    for (const pat of REGEX_PATTERNS) {
@@ -75,7 +75,7 @@
    }
    return { findings, summary };
  }
-
+ 
  export default function DebuggerModule() {
    const [input, setInput] = useState(DEMO_JS);
    const [auto, setAuto] = useState(true);
@@ -83,7 +83,7 @@
    const [error, setError] = useState("");
    const textareaRef = useRef();
    const fileInputRef = useRef();
-
+ 
    // Controlled textarea update (live or manual)
    function updateFindings(newText) {
      try {
@@ -95,16 +95,16 @@
        setError("Regex parsing error: " + (e?.message || "Unknown error"));
      }
    }
-
+ 
    function handleChange(e) {
      setInput(e.target.value);
      if (auto) updateFindings(e.target.value);
    }
-
+ 
    function handleExtract() {
      updateFindings(input);
    }
-
+ 
    function handleUploadFile(e) {
      const file = e.target.files[0];
      if (!file) return;
@@ -133,7 +133,7 @@
      reader.onerror = () => setError("Failed to read file: " + file.name);
      reader.readAsText(file);
    }
-
+ 
    // Keyboard shortcut: Ctrl+Enter/⌘+Enter runs extraction (manual mode)
    function handleKeyDown(e) {
      if (!auto && (e.ctrlKey || e.metaKey) && e.key === "Enter") {
@@ -141,15 +141,15 @@
        handleExtract();
      }
    }
-
+ 
    // Visually highlight rows, add ARIA attributes for accessibility
    function tableHighlight(rowIdx) {
      return { background: rowIdx % 2 === 0 ? "rgba(255,152,0,0.07)" : "#22272e" };
    }
-
+ 
    // Stats: Only show counts where relevant
    const stats = Object.entries(findings.summary || {}).filter(([, vals]) => vals.length > 0);
-
+ 
    // Focus management for table
    function onTableKeyDown(e, idx) {
      if (!findings.findings.length) return;
@@ -161,7 +161,7 @@
        e.preventDefault();
      }
    }
-
+ 
    return (
      <div>
        <div className="panel" style={{ marginBottom: "34px" }}>
@@ -308,3 +308,4 @@
      </div>
    );
  }
+ 

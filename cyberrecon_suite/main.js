@@ -56,6 +56,258 @@ async function initializeAppWithDB() {
   createWindow();
 }
 
+/** 
+ * Proxy server for exploitation toolkit (start/stop, session record, replay, etc)
+ * Runs only in Electron main!
+ */
+const express = require('express');
+const { createProxyMiddleware } = require('http-proxy-middleware');
+const http = require('http');
+
+let proxyServer = null;
+let proxyApp = null;
+let proxyPort = 8088; // default, could IPC config later
+let proxyTarget = ''; // will forward all traffic unless set
+let proxySessions = []; // Array of {id, ts, reqRaw, resRaw, meta, replayable}
+let lastProxySessionId = 0;
+
+/**
+ * Start the proxy server if not already running
+ * @returns {Promise<{ok: boolean, port: number, error?: string}>}
+ */
+// PUBLIC_INTERFACE for IPC
+async function startProxyServer({ target = '', port } = {}) {
+  if (proxyServer) return { ok: false, error: 'Proxy already running', port: proxyPort };
+  try {
+    proxyTarget = target || '';
+    proxyPort = port || 8088;
+    proxySessions = [];
+    lastProxySessionId = 0;
+
+    proxyApp = express();
+
+    // Simple body parser for POST, PUT, etc
+    proxyApp.use(express.raw({ type: '*/*', limit: '10mb' }));
+
+    proxyApp.use('*', createProxyMiddleware({
+      target: proxyTarget || 'http://example.com', // dummy if unused, will be overridden per req if target param
+      changeOrigin: true,
+      selfHandleResponse: true,
+      logLevel: 'silent',
+      /**
+       * Modify the proxy request (for replay/target override).
+       */
+      onProxyReq: (proxyReq, req, res) => {
+        let rawBody = req.body;
+        if (Buffer.isBuffer(rawBody) && rawBody.length > 0) {
+          proxyReq.setHeader('content-length', rawBody.length);
+          proxyReq.write(rawBody);
+        }
+      },
+      /**
+       * Capture proxied response, log both request/response, return to client.
+       */
+      onProxyRes: async (proxyRes, req, res) => {
+        try {
+          let reqRaw = '';
+          try {
+            reqRaw = `${req.method} ${req.originalUrl} HTTP/${req.httpVersion}\n`;
+            Object.entries(req.headers).forEach(([k, v]) => {
+              reqRaw += `${k}: ${v}\n`;
+            });
+            reqRaw += '\n';
+            if (req.body && Buffer.isBuffer(req.body)) {
+              reqRaw += req.body.toString('utf8');
+            }
+          } catch {}
+
+          let resRaw = '';
+          try {
+            resRaw = `HTTP/${proxyRes.httpVersion} ${proxyRes.statusCode} ${proxyRes.statusMessage}\n`;
+            Object.entries(proxyRes.headers).forEach(([k, v]) => {
+              resRaw += `${k}: ${v}\n`;
+            });
+            resRaw += '\n';
+          } catch {}
+
+          // Pipe response to buffer
+          let chunks = [];
+          proxyRes.on('data', chunk => chunks.push(chunk));
+          proxyRes.on('end', () => {
+            let body = Buffer.concat(chunks).toString('utf8');
+            resRaw += body;
+
+            // Push new session object
+            const sess = {
+              id: (++lastProxySessionId),
+              ts: new Date().toISOString(),
+              reqRaw, resRaw,
+              reqMeta: {
+                method: req.method,
+                url: req.originalUrl,
+                headers: req.headers,
+              },
+              resMeta: {
+                status: proxyRes.statusCode,
+                headers: proxyRes.headers,
+              },
+              replayable: true
+            };
+            proxySessions.unshift(sess);
+            // Only keep last 128 for memory
+            if (proxySessions.length > 128) proxySessions.length = 128;
+
+            // Write response to client
+            try {
+              res.status(proxyRes.statusCode);
+              Object.entries(proxyRes.headers).forEach(([k, v]) => {
+                res.setHeader(k, v);
+              });
+              res.send(body);
+            } catch (e) {
+              res.status(500).send('Proxy internal error');
+            }
+
+            // Optionally: send IPC event/notification
+            if (BrowserWindow.getAllWindows().length) {
+              BrowserWindow.getAllWindows().forEach(win => {
+                win.webContents.send('proxy-session-added', { id: sess.id, ...sess });
+              });
+            }
+          });
+        } catch (err) {
+          res.status(500).send('Proxy session error');
+        }
+      }
+    }));
+
+    proxyServer = http.createServer(proxyApp);
+    await new Promise((resolve, reject) => {
+      proxyServer.listen(proxyPort, () => resolve());
+      proxyServer.on('error', reject);
+    });
+
+    return { ok: true, port: proxyPort };
+  } catch (err) {
+    proxyServer = null;
+    proxyApp = null;
+    return { ok: false, error: String(err), port: proxyPort };
+  }
+}
+
+/**
+ * Stop proxy server.
+ * @returns {Promise<{ok: boolean, error?: string}>}
+ */
+// PUBLIC_INTERFACE for IPC
+async function stopProxyServer() {
+  if (!proxyServer) return { ok: false, error: 'Proxy not running' };
+  try {
+    await new Promise((resolve, reject) => {
+      proxyServer.close(err => (err ? reject(err) : resolve()));
+    });
+    proxyServer = null;
+    proxyApp = null;
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
+}
+
+/**
+ * Fetch proxy session timeline.
+ * @returns {Promise<{ok: true, timeline: Array}>}
+ */
+function getProxySessions() {
+  return { ok: true, timeline: proxySessions };
+}
+
+/**
+ * Replay and optionally modify a proxy session request by session id and request string.
+ * @param {number} id - Session id
+ * @param {string} newRequest - Raw HTTP request to replay
+ * @returns {Promise<{ok: boolean, resRaw: string, reqRaw: string, error?: string}>}
+ */
+// PUBLIC_INTERFACE for IPC
+async function replayProxyRequest({ sessionId, newRequest }) {
+  // Parse raw HTTP and fire upstream (poor man's implementation)
+  // For full-fidelity use, parse the text HTTP request; here, just forward as is.
+  try {
+    const session = proxySessions.find(sess => sess.id === sessionId);
+    if (!session) return { ok: false, error: 'Session not found' };
+    // Parse first line
+    const lines = (newRequest || session.reqRaw).split(/\r?\n/);
+    const [method, url] = lines[0].split(' ');
+    let headers = {};
+    let body = '';
+    let inBody = false;
+    for (let i = 1; i < lines.length; ++i) {
+      if (!inBody && lines[i].trim() === '') { inBody = true; continue; }
+      if (!inBody) {
+        const idx = lines[i].indexOf(':');
+        if (idx > 0) {
+          let h = lines[i].slice(0, idx).trim().toLowerCase();
+          let v = lines[i].slice(idx + 1).trim();
+          headers[h] = v;
+        }
+      } else {
+        body += lines[i] + '\n';
+      }
+    }
+
+    // Replay by sending HTTP request to target
+    return await new Promise((resolve) => {
+      const reqOpts = {
+        method,
+        headers,
+      };
+      // Target host: header, or use session original target, or last known
+      let targetHost = headers['host'] || proxyTarget.replace(/^https?:\/\//, '') || '';
+      let tgt = (proxyTarget ? proxyTarget : 'http://' + targetHost);
+      const reqLib = tgt.startsWith('https://') ? require('https') : require('http');
+      const fullUrl = tgt + url;
+      const reqObj = reqLib.request(fullUrl, reqOpts, (res) => {
+        let resp = '';
+        res.on('data', chunk => resp += chunk);
+        res.on('end', () => {
+          const resRaw = `HTTP/${res.httpVersion} ${res.statusCode} ${res.statusMessage}\n` +
+            Object.entries(res.headers).map(([k, v]) => `${k}: ${v}`).join('\n') + '\n\n' +
+            resp;
+          resolve({ ok: true, resRaw, reqRaw: newRequest || session.reqRaw });
+        });
+      });
+      reqObj.on('error', (err) => {
+        resolve({ ok: false, error: String(err) });
+      });
+      if (body.trim()) reqObj.write(body);
+      reqObj.end();
+    });
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
+}
+
+// IPC HANDLERS FOR PROXY SERVER
+
+ipcMain.handle('proxy-start', async (_event, params) => {
+  return await startProxyServer(params);
+});
+ipcMain.handle('proxy-stop', async (_event) => {
+  return await stopProxyServer();
+});
+ipcMain.handle('proxy-get-sessions', async () => {
+  return getProxySessions();
+});
+ipcMain.handle('proxy-replay-request', async (_event, params) => {
+  return await replayProxyRequest(params);
+});
+ipcMain.handle('proxy-clear-sessions', async () => {
+  proxySessions = [];
+  lastProxySessionId = 0;
+  return { ok: true };
+});
+
+
 // Electron app event hooks
 app.whenReady().then(initializeAppWithDB);
 

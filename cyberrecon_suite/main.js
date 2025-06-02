@@ -2,6 +2,9 @@ const { app, BrowserWindow, ipcMain, nativeTheme } = require('electron');
 const path = require('path');
 const { exec } = require('child_process'); // To run CLI commands securely
 
+// Initialize database abstraction
+const db = require('./electron-utils/db.js');
+
 // PUBLIC_INTERFACE
 function createWindow() {
   const win = new BrowserWindow({
@@ -40,8 +43,21 @@ function createWindow() {
   });
 }
 
+/**
+ * Persistent DB init (called before window launch)
+ */
+async function initializeAppWithDB() {
+  try {
+    await db.initialize();
+    console.log(`[CyberReconSuite] DB initialized with: ${db.dbType}`);
+  } catch (err) {
+    console.error('[CyberReconSuite] Failed to init DB:', err);
+  }
+  createWindow();
+}
+
 // Electron app event hooks
-app.whenReady().then(createWindow);
+app.whenReady().then(initializeAppWithDB);
 
 app.on('window-all-closed', () => {
   // On macOS, apps generally stay active until explicit quit
@@ -174,6 +190,34 @@ function execPromise(cmd, timeoutMs = 30000) {
     });
   });
 }
+
+/**
+ * PUBLIC_INTERFACE
+ * IPC handlers for DB-backed session/scan history (insert and find).
+ * Usage from renderer: window.electronAPI.dbInsertSession({type, label, data}), dbGetSessions({type, limit})
+ */
+
+// Save new session/scan result
+ipcMain.handle('db-insert-session', async (_event, session) => {
+  try {
+    if (!session || typeof session !== 'object' || !session.type)
+      throw new Error('Session object with "type" required');
+    const id = await db.insertSession(session);
+    return { success: true, id };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
+});
+
+// Retrieve recon/scan session history
+ipcMain.handle('db-get-sessions', async (_event, query = {}) => {
+  try {
+    const sessions = await db.getSessions(query);
+    return { success: true, sessions };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
+});
 
 // Here you can add more handlers for modules (recon, scan, etc.)
 // Example (uncomment and write implementation as needed)

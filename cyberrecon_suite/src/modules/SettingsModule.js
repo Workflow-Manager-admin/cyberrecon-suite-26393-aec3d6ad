@@ -1,7 +1,10 @@
 /**
  * PUBLIC_INTERFACE
- * Placeholder for Settings/Plugin Manager.
+ * Settings/Plugin Manager Module. Embeds SettingsManager UI.
  */
+import React from "react";
+import SettingsManager from "./SettingsManager";
+
 export default function SettingsModule() {
-  return <div>Settings & Plugin Manager coming soon.</div>;
+  return <SettingsManager />;
 }

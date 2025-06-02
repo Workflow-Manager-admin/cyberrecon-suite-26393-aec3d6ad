@@ -58,8 +58,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   dbGetSessions: (opts) => ipcRenderer.invoke('db-get-sessions', opts),
 
   /**
-   * HOW TO ADD A MODULE-SPECIFIC BRIDGE EXAMPLE
-   * ------------------------------------------
+   * PUBLIC_INTERFACE
+   * Secure getSettings/saveSettings bridge for settings and API keys.
+   * Used for secure textbox fields in SettingsManager. Only available in Electron.
+   */
+  getSettings: () => ipcRenderer.invoke('get-settings'),
+  saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
+
+  /** HOW TO ADD A MODULE-SPECIFIC BRIDGE EXAMPLE
    * To call Amass from renderer:
    * 1. Add an ipcMain.handle('run-amass', async ...) in main.js,
    * 2. Add runAmass: (params) => ipcRenderer.invoke('run-amass', params) here.
@@ -89,6 +95,10 @@ if (typeof window !== "undefined" && !window.electronAPI) {
       ({ success: false, error: "Electron session API unavailable (web)" }),
     dbGetSessions: async () =>
       ({ success: false, error: "Electron session API unavailable (web)" }),
+    getSettings: async () =>
+      ({ success: true, apiKeys: { amass: "", nuclei: "", hackerone: "", bugcrowd: "", intigriti: "" } }),
+    saveSettings: async () =>
+      ({ success: false, error: "Electron settings API unavailable (web)" }),
     // Any more future API additions here...
   };
   window.theme = window.theme || { isDark: true };

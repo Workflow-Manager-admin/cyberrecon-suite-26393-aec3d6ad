@@ -37,9 +37,9 @@ export default function BountyModule() {
   );
   return (
     <div>
-      <div className="panel">
-        <div className="panel-header">
-          Bug Bounty Aggregator <span className="badge">Alpha</span><span className="badge-faint" style={{marginLeft:7}}>Premium</span>
+      <div className="panel" style={{marginBottom:"30px"}}>
+        <div className="panel-header" style={{display:"flex",alignItems:"center",gap:9}}>
+          Bug Bounty Aggregator <span className="badge">Alpha</span><span className="badge-faint">Premium</span>
         </div>
         <div className="description">
           Pull programs from HackerOne, Bugcrowd, Intigriti. Filter by bounty/platform. Quickly add domains to recon.

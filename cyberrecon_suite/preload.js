@@ -72,3 +72,24 @@ contextBridge.exposeInMainWorld('theme', {
   // Placeholder: Extend with theme change listeners if needed
   isDark: true
 });
+
+// PUBLIC_INTERFACE (important for browser fallback)
+// If not running in Electron, define a stub electronAPI for web context
+if (typeof window !== "undefined" && !window.electronAPI) {
+  // This block only runs if preload was NOT injected (i.e., not Electron, or contextIsolation/browser)
+  window.electronAPI = {
+    ping: async () => "pong (web fallback)",
+    runCliCommand: async () =>
+      ({ stdout: "", stderr: "Not available in browser build", code: 1, error: "Electron bridge unavailable" }),
+    runMasscan: async () =>
+      ({ stdout: "", stderr: "Not available in browser build", code: 1, error: "Electron bridge unavailable" }),
+    runNuclei: async () =>
+      ({ stdout: "", stderr: "Not available in browser build", code: 1, error: "Electron bridge unavailable" }),
+    dbSaveSession: async () =>
+      ({ success: false, error: "Electron session API unavailable (web)" }),
+    dbGetSessions: async () =>
+      ({ success: false, error: "Electron session API unavailable (web)" }),
+    // Any more future API additions here...
+  };
+  window.theme = window.theme || { isDark: true };
+}

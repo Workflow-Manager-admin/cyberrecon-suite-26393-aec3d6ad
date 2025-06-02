@@ -5,6 +5,8 @@
 
 import React, { useState, useEffect } from "react";
 import { saveSession, getSessions } from "./utils/ipcSession";
+import SidebarPanel from "../components/SidebarPanel";
+import "../components/SidebarPanel.css";
 
 /**
  * useCliCommand – React hook to request CLI operations via Electron IPC.
@@ -114,30 +116,7 @@ export default function ReconDashboard() {
 
   // Premium slide-in sidebar with quick actions & history preview
   const sidebarPanel = (
-    <aside
-      style={{
-        position: "fixed",
-        right: sidebarOpen ? 0 : "-360px",
-        top: 0,
-        height: "100vh",
-        width: 340,
-        background: "var(--color-bg-panel)",
-        boxShadow: "-6px 0 32px #000a, 0 1.5px 0 #150b0450",
-        borderLeft: "2px solid var(--color-accent50)",
-        zIndex: 100,
-        transition: "right 0.26s cubic-bezier(.41,1.2,.54,.98)",
-        padding: "34px 19px 24px 22px"
-      }}
-      aria-label="Recon Quick Panel"
-    >
-      <button
-        className="btn btn-ghost"
-        style={{ position: "absolute", left: -80, top: 33, fontWeight: 900 }}
-        onClick={() => setSidebarOpen(false)}
-        aria-label="Close quick panel"
-      >
-        ← Close
-      </button>
+    <SidebarPanel open={sidebarOpen} onClose={() => setSidebarOpen(false)} width={340} ariaLabel="Recon Quick Panel">
       <div className="panel-header" style={{ marginTop: "1.5em" }}>
         Recon Quick Actions
       </div>
@@ -209,7 +188,7 @@ export default function ReconDashboard() {
         - Sessions are cached locally.<br />
         - Export, graph, and more coming soon.
       </div>
-    </aside>
+    </SidebarPanel>
   );
 
   return (
@@ -219,12 +198,14 @@ export default function ReconDashboard() {
         className="btn btn-ghost"
         style={{
           position: "fixed",
-          right: sidebarOpen ? 340 : 15,
+          right: sidebarOpen ? 346 : 15,
           top: 80,
-          zIndex: 101,
+          zIndex: 1302,
           borderRadius: "8px 0 0 8px",
           boxShadow: sidebarOpen ? "none" : "0 2px 8px 0 #0002",
-          transition: "right 0.25s"
+          transition: "right 0.29s",
+          background: sidebarOpen ? "#ff9800" : "none",
+          color: sidebarOpen ? "#23272e" : "var(--color-accent)",
         }}
         onClick={() => setSidebarOpen(s => !s)}
         aria-label={sidebarOpen ? "Hide quick panel" : "Show quick panel"}

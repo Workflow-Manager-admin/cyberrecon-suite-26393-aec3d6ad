@@ -1,0 +1,121 @@
+:root {
+  --sidebar-bg: var(--color-bg-secondary, #181a20);
+  --sidebar-width: 226px;
+  --sidebar-accent: var(--color-accent, #ff9800);
+  --sidebar-border: 1px solid var(--border-color, #23272e);
+  --sidebar-text: var(--color-text, #fff);
+  --sidebar-hover: rgba(255,255,255,0.06);
+}
+
+.sidebar {
+  background: var(--sidebar-bg);
+  min-height: 100vh;
+  width: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  border-right: var(--sidebar-border);
+  color: var(--sidebar-text);
+  z-index: 10;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.sidebar__logo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  padding: 28px 22px 20px 22px;
+  color: var(--sidebar-text);
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 0 #0006;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  user-select: none;
+}
+
+.sidebar__logo-mark {
+  color: var(--sidebar-accent);
+  font-size: 1.5em;
+  font-weight: 800;
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0; padding: 0;
+  gap: 3px;
+}
+
+.sidebar__nav-btn {
+  outline: none;
+  border: none;
+  background: none;
+  color: var(--sidebar-text);
+  font-size: 1em;
+  padding: 13px 24px 13px 18px;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  border-radius: 0 100px 100px 0;
+  transition: background 0.17s;
+  position: relative;
+}
+
+.sidebar__nav-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--sidebar-accent);
+}
+
+.sidebar__nav-btn--active,
+.sidebar__nav-btn:hover {
+  background: var(--sidebar-hover);
+  color: var(--sidebar-accent);
+}
+
+.sidebar__nav-btn--active::before {
+  content: "";
+  display: block;
+  position: absolute;
+  height: 60%;
+  width: 4px;
+  left: 0;
+  top: 20%;
+  border-radius: 3px;
+  background: var(--sidebar-accent);
+}
+
+.sidebar__icon {
+  font-size: 1.27em;
+  width: 1.4em;
+  text-align: center;
+  color: var(--sidebar-accent);
+  filter: drop-shadow(0 1px 0 #000a);
+}
+
+.sidebar__label {
+  letter-spacing: 0.01em;
+  font-weight: 500;
+  transition: color 0.17s;
+  color: var(--sidebar-text);
+  text-shadow: 0 1px 0 #0005;
+}
+
+@media (max-width: 800px) {
+  .sidebar {
+    width: 56px;
+    min-width: 56px;
+    max-width: 56px;
+  }
+  .sidebar__label {
+    display: none;
+  }
+  .sidebar__logo {
+    font-size: 1.1rem;
+    padding: 18px 8px 10px 8px;
+    gap: 0;
+  }
+}

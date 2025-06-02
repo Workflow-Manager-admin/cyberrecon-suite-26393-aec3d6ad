@@ -4,25 +4,42 @@ import "./SettingsManager.css";
 // Utility to read/write settings via Electron IPC or localStorage fallback
 const SETTINGS_KEY = "cyberrecon-suite-settings";
 
-// PUBLIC_INTERFACE: load settings (async, prefer Electron IPC in future if available)
+/**
+ * PUBLIC_INTERFACE
+ * Loads the app's settings, retrieving persisted secure API keys for all platforms.
+ * Uses Electron bridge if available, else (browser dev) from localStorage.
+ */
 export async function loadSettings() {
-  // Try electronAPI if extended in future, fallback to localStorage
   try {
     if (window.electronAPI?.getSettings) {
-      return await window.electronAPI.getSettings();
+      const res = await window.electronAPI.getSettings();
+      // Ensure always returns apiKeys object even on error
+      if (res && res.success && typeof res.apiKeys === 'object') {
+        return { apiKeys: { ...res.apiKeys } };
+      }
+      return { apiKeys: {} };
     }
+    // Fallback (web): retrieve all keys
     const raw = window.localStorage.getItem(SETTINGS_KEY);
-    return raw ? JSON.parse(raw) : {};
+    let parsed = {};
+    try { parsed = raw ? JSON.parse(raw) : {}; } catch {}
+    return parsed && parsed.apiKeys ? parsed : { apiKeys: {} };
   } catch (e) {
-    return {};
+    return { apiKeys: {} };
   }
 }
 
-// PUBLIC_INTERFACE: save settings (async, prefer Electron IPC in future if available)
+/**
+ * PUBLIC_INTERFACE
+ * Saves settings, including secure bug bounty API keys, through Electron bridge if available.
+ * Returns true/false for success.
+ */
 export async function saveSettings(settings) {
   try {
+    // Optionally validation could go here; or handled in handleSave
     if (window.electronAPI?.saveSettings) {
-      return await window.electronAPI.saveSettings(settings);
+      const res = await window.electronAPI.saveSettings(settings);
+      return !!(res && res.success);
     }
     window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     return true;

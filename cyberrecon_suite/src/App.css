@@ -2,14 +2,22 @@
   /* Core theme tokens inspired by Burp Suite, modern accent style */
   --color-bg: #23272e;
   --color-bg-secondary: #181a20;
+  --color-bg-panel: #24272f;
   --color-accent: #ff9800;
   --color-accent50: #ffd699;
   --color-accent-hover: #ffa726;
+  --color-accent-dim: #ad6700;
   --color-text: #fff;
   --color-text-secondary: rgba(255,255,255,0.7);
+  --color-text-faint: #babfc7;
+  --color-error: #ff545f;
+  --color-success: #4be38d;
+
   --border-color: #2f333a;
   --border-color-light: rgba(255,255,255,0.08);
+  --border-color-contrast: #393b41;
   --scrollbar: #3d414b;
+  --overlay: rgba(30,32,38,0.96);
   --sidebar-blur: 42px;
 
   /* For light/dark theme toggle: */
@@ -17,6 +25,8 @@
   --light-bg-secondary: #fff;
   --light-text: #181a20;
   --light-accent: #ff9800;
+  --input-bg: #23272e;
+  --input-border: #42454c;
 }
 
 body {

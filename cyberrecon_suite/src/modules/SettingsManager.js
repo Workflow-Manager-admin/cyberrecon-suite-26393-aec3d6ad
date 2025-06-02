@@ -82,6 +82,40 @@ function PluginRow({ plugin, onToggle, onConfigChange }) {
   );
 }
 
+/**
+ * PRIVATE
+ * Secure masked API key input + show/hide toggle for bug bounty platform keys.
+ */
+function ApiKeyPasswordField({ id, engine, label, value, onChange }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="settings-row">
+      <label htmlFor={id} className="settings-label">{label}</label>
+      <input
+        id={id}
+        type={show ? "text" : "password"}
+        value={value}
+        onChange={e => onChange(engine, e.target.value)}
+        autoComplete="off"
+        minLength={10}
+        placeholder="Enter API key"
+        aria-label={label}
+        style={{ width: 240 }}
+      />
+      <button
+        type="button"
+        className="btn btn-ghost"
+        aria-label={show ? `Hide ${label}` : `Show ${label}`}
+        onClick={() => setShow(s => !s)}
+        tabIndex={0}
+        style={{ minWidth: 52, marginLeft: 6, fontSize: "0.99em" }}
+      >
+        {show ? "Hide" : "Show"}
+      </button>
+    </div>
+  );
+}
+
 // PUBLIC_INTERFACE
 /**
  * Main Professional Settings Manager UI
@@ -182,7 +216,7 @@ export default function SettingsManager() {
   function handleReset() {
     // Resets to default (user still needs to save)
     setSettings({
-      apiKeys: { amass: "", nuclei: "" },
+      apiKeys: { amass: "", nuclei: "", hackerone: "", bugcrowd: "", intigriti: "" },
       proxy: { enabled: false, host: "", port: "" },
       plugins: [
         { id: "payloadgen", label: "Payload Generator", enabled: false, config: "" },

@@ -287,20 +287,33 @@ async function replayProxyRequest({ sessionId, newRequest }) {
   }
 }
 
-// IPC HANDLERS FOR PROXY SERVER
+/*
+ * PUBLIC_INTERFACE
+ * IPC HANDLERS FOR PROXY SERVER
+ * These handlers ensure all proxy* APIs are exposed for the renderer.
+ */
 
+// Start proxy server
 ipcMain.handle('proxy-start', async (_event, params) => {
   return await startProxyServer(params);
 });
+
+// Stop proxy server
 ipcMain.handle('proxy-stop', async (_event) => {
   return await stopProxyServer();
 });
+
+// Get proxy sessions/timeline
 ipcMain.handle('proxy-get-sessions', async () => {
   return getProxySessions();
 });
+
+// Replay a proxy session request
 ipcMain.handle('proxy-replay-request', async (_event, params) => {
   return await replayProxyRequest(params);
 });
+
+// Clear all proxy session history (reset timeline)
 ipcMain.handle('proxy-clear-sessions', async () => {
   proxySessions = [];
   lastProxySessionId = 0;

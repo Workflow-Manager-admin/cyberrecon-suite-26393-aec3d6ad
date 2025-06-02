@@ -206,6 +206,29 @@ export default function SettingsManager() {
             aria-label="Nuclei API Key"
           />
         </div>
+
+        {/* API KEYS FOR BOUNTY PLATFORMS */}
+        <ApiKeyPasswordField
+          id="hackerone-key"
+          engine="hackerone"
+          label="HackerOne API Key"
+          value={settings.apiKeys.hackerone}
+          onChange={handleApiKeyChange}
+        />
+        <ApiKeyPasswordField
+          id="bugcrowd-key"
+          engine="bugcrowd"
+          label="Bugcrowd API Key"
+          value={settings.apiKeys.bugcrowd}
+          onChange={handleApiKeyChange}
+        />
+        <ApiKeyPasswordField
+          id="intigriti-key"
+          engine="intigriti"
+          label="Intigriti API Key"
+          value={settings.apiKeys.intigriti}
+          onChange={handleApiKeyChange}
+        />
       </section>
       <hr className="divider" />
       <section aria-labelledby="proxy-settings">

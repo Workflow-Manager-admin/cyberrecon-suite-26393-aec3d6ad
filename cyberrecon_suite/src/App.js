@@ -34,6 +34,16 @@ const moduleComponentMap = {
 function App() {
   const [activeModule, setActiveModule] = useState("recon"); // default module
 
+  // PUBLIC_INTERFACE – listen for "gotoSettings" for easy navigation from error link
+  React.useEffect(() => {
+    function handleGotoSettings(e) {
+      setActiveModule("settings");
+    }
+    window.addEventListener("cyberrecon:gotoSettings", handleGotoSettings);
+    return () =>
+      window.removeEventListener("cyberrecon:gotoSettings", handleGotoSettings);
+  }, []);
+
   const CurrentModule = moduleComponentMap[activeModule] || (() => <div>Module Not Found</div>);
 
   return (

@@ -123,7 +123,73 @@ body {
   background: #2bb272;
 }
 
-/* Utility classes */
+/* Panel container, card, modal (for modules or dialogues) */
+.panel,
+.card,
+.modal-content {
+  background: var(--color-bg-panel);
+  border-radius: 7px;
+  border: 1.5px solid var(--border-color);
+  padding: 24px 28px 22px 28px;
+  margin-bottom: 18px;
+  box-shadow: 0 6px 32px 0 #0007, 0 1.5px 0 #150b0450;
+  color: var(--color-text);
+}
+
+.panel-header, .card-header {
+  font-size: 1.18em;
+  font-weight: 600;
+  margin-bottom: 10px;
+  letter-spacing: 0.01em;
+}
+.card-foot, .panel-foot {
+  margin-top: 1.1em;
+}
+
+hr {
+  border: 0;
+  border-bottom: 1px solid var(--border-color-contrast);
+  margin: 22px 0;
+}
+
+/* Table styling for dark theme with high contrast and accessible row/hover focus */
+.table, table {
+  width: 100%;
+  background: var(--color-bg);
+  color: var(--color-text);
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 4px;
+}
+.table th, table th {
+  font-weight: 600;
+  padding: 10px 8px;
+  border-bottom: 2px solid var(--color-accent);
+  background: var(--color-bg-panel);
+  text-align: left;
+  font-size: 1em;
+}
+.table td, table td {
+  padding: 9px 10px;
+  font-size: 0.99em;
+  border-bottom: 1px solid var(--border-color-light);
+}
+.table tr:last-child td, table tr:last-child td {
+  border-bottom: none;
+}
+.table tr:hover, table tr:hover {
+  background: rgba(255,152,0,0.04);
+}
+th, td {
+  vertical-align: middle;
+}
+.caption {
+  color: var(--color-accent50);
+  font-size: 0.97em;
+  margin-bottom: 2px;
+}
+
+/* For accessibility: visually-hidden utility */
 .sr-only { /* accessibility helper */
   position: absolute;
   width: 1px; height: 1px;
@@ -131,6 +197,108 @@ body {
   clip: rect(0,0,0,0);
   white-space: nowrap;
   border: 0;
+}
+
+/* Code/monospace highlights in output areas */
+pre, code, .codearea {
+  background: #23272e;
+  color: #ffca80;
+  font-family: 'JetBrains Mono', 'Fira Mono', 'Menlo', 'monospace';
+  font-size: 1em;
+  padding: 7px 12px;
+  border-radius: 5px;
+  border: 1px solid #2f333a;
+  overflow-x: auto;
+}
+.codearea {
+  line-height: 1.51;
+  margin: 4px 0 7px 0;
+  background: #232130;
+  color: #feedb9;
+}
+
+kbd {
+  background: #12141a;
+  color: var(--color-accent);
+  border: 1px solid var(--border-color-light);
+  font-size: 0.91em;
+  border-radius: 3px;
+  padding: 2px 5px 1px 5px;
+}
+
+.badge, .badge-accent {
+  background: var(--color-accent);
+  color: var(--color-bg-secondary);
+  border-radius: 8px;
+  padding: 1.8px 9px 2px 9px;
+  font-size: 0.98em;
+  margin-left: 10px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.badge-faint {
+  background: var(--color-accent50);
+  color: var(--color-bg-secondary);
+  border-radius: 8px;
+  padding: 1.7px 9px 2px 9px;
+  font-size: 0.97em;
+  margin-left: 8px;
+  font-weight: 400;
+}
+
+/* Input, select, textarea base styling (modern/dark, highly accessible) */
+input, select, textarea {
+  background: var(--input-bg, #23272e);
+  border: 1.5px solid var(--input-border, #42454c);
+  border-radius: 4px;
+  color: var(--color-text);
+  padding: 9px 13px;
+  font-size: 1em;
+  margin: 4px 0;
+  outline: none;
+  transition: border 0.13s, box-shadow 0.13s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1.5px var(--color-accent50);
+}
+input[readonly], input:disabled, select:disabled, textarea:disabled {
+  opacity: 0.6;
+  color: #d5d5d5;
+  background: #373a44;
+  cursor: not-allowed;
+}
+
+/* Modern modal/backdrop overlay (for dialogs, popups) */
+.modal-backdrop {
+  background: var(--overlay);
+  z-index: 800;
+  position: fixed;
+  left: 0; top: 0; width: 100vw; height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s;
+}
+.modal-content {
+  min-width: 340px;
+  max-width: 98vw;
+  max-height: 95vh;
+  overflow-y: auto;
+  position: relative;
+  z-index: 805;
+}
+
+@media (max-width: 600px) {
+  .panel, .card, .modal-content { padding: 11px 8px 10px 8px }
+}
+
+/* Divider/line for section separation */
+.divider {
+  border: none;
+  border-top: 2px solid var(--border-color-light);
+  height: 0;
+  margin: 25px 0 18px 0;
 }
 
 /* Scrollbar styling for dark background */

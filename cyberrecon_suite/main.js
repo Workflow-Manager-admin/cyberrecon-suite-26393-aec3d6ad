@@ -43,7 +43,7 @@ function createWindow() {
   });
 }
 
-/**
+/** 
  * Persistent DB init (called before window launch)
  */
 async function initializeAppWithDB() {
@@ -214,6 +214,72 @@ ipcMain.handle('db-get-sessions', async (_event, query = {}) => {
   try {
     const sessions = await db.getSessions(query);
     return { success: true, sessions };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
+});
+
+/**
+ * PUBLIC_INTERFACE
+ * Additional IPC handlers for secure database access: db-save-session and db-get-sessions for frontend contextBridge
+ * - db-save-session: validates type, label, and data, and inserts sanitized session
+ * - db-get-sessions: provides limited filterable queries to renderer safely
+ */
+ipcMain.handle('db-save-session', async (_event, session) => {
+  // Validate session: should be object with {type: string, label?: string, data: object}
+  try {
+    if (
+      !session ||
+      typeof session !== 'object' ||
+      typeof session.type !== 'string' ||
+      !['recon', 'scan'].includes(session.type) ||
+      typeof session.data !== 'object'
+    ) {
+      throw new Error('Invalid session object (type & data required, type=recon|scan)');
+    }
+    // Label is optional, must be string if present
+    if (
+      session.label &&
+      typeof session.label !== 'string'
+    ) throw new Error('Session label must be string if provided');
+    // Data: do minimal recursion to ensure serializable
+    const safeSession = {
+      type: session.type,
+      label: session.label ? String(session.label).slice(0, 512) : '',
+      data: JSON.parse(JSON.stringify(session.data || {})), // deep copy, strips functions/unsafe refs
+    };
+    const id = await db.insertSession(safeSession);
+    return { success: true, id };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
+});
+
+ipcMain.handle('db-get-sessions', async (_event, opts = {}) => {
+  try {
+    // Only allow limit <= 1000, and whitelisted types
+    let type = undefined, limit = 100;
+    if (typeof opts === 'object') {
+      if (opts.type && (opts.type === 'recon' || opts.type === 'scan')) type = opts.type;
+      if (typeof opts.limit === 'number' && opts.limit > 0 && opts.limit <= 1000) limit = opts.limit;
+    }
+    const sessions = await db.getSessions({ type, limit });
+
+    // Serialize result: Each session sanitized to: {id, type, label, started_at, data}
+    const safeSessions = Array.isArray(sessions)
+      ? sessions.map(s => ({
+          id: s.id,
+          type: String(s.type),
+          label: typeof s.label === 'string' ? s.label : '',
+          started_at: s.started_at,
+          data: typeof s.data === 'object'
+            ? JSON.parse(JSON.stringify(s.data))
+            : (typeof s.data === 'string'
+                ? (() => { try { return JSON.parse(s.data); } catch { return {}; } })()
+                : {}),
+        }))
+      : [];
+    return { success: true, sessions: safeSessions };
   } catch (err) {
     return { success: false, error: String(err) };
   }

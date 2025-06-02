@@ -35,11 +35,18 @@ export async function saveSession(type, data, label = "") {
  */
 export async function getSessions(opts = {}) {
   if (!window.electronAPI?.dbGetSessions) {
+    if (typeof window !== "undefined" && !window.electronAPI) {
+      // Fallback to browser stub (see preload.js edit)
+      if (window.console && console.warn)
+        console.warn("window.electronAPI.dbGetSessions not available: using fallback");
+    }
     return { success: false, error: "Electron session API unavailable" };
   }
   try {
     return await window.electronAPI.dbGetSessions(opts);
   } catch (err) {
+    if (window.console && console.error)
+      console.error("Electron session getSessions error:", err);
     return { success: false, error: String(err) };
   }
 }

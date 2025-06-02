@@ -96,7 +96,7 @@ export default function DebuggerModule() {
         </div>
       </div>
       <div className="panel">
-        <div className="panel-header">Findings Table</div>
+        <div className="panel-header">Extracted Findings <span className="badge-faint" style={{marginLeft:8}}>Demo</span></div>
         <table className="table" style={{background:"#24272f",marginBottom:0}}>
           <thead>
             <tr>

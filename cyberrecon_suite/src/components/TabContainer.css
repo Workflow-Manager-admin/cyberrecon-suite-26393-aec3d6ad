@@ -1,0 +1,66 @@
+:root {
+  --tab-bg: var(--color-bg, #23272e);
+  --tabbar-bg: var(--color-bg-secondary, #181a20);
+  --tab-accent: var(--color-accent, #ff9800);
+  --tab-text: var(--color-text, #fff);
+  --tab-inactive: rgba(255, 255, 255, 0.21);
+}
+
+.tabcontainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--tab-bg);
+  color: var(--tab-text);
+}
+
+.tabcontainer__tab-bar {
+  background: var(--tabbar-bg);
+  display: flex;
+  flex-direction: row;
+  height: 51px;
+  align-items: end;
+  border-bottom: 1px solid var(--tab-inactive);
+  padding-left: 22px;
+}
+
+.tabcontainer__tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px 0 6px;
+  height: 48px;
+  min-width: 0;
+  color: var(--tab-inactive);
+  font-size: 1.03em;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 7px 7px 0 0;
+  margin-right: 3px;
+  transition: color 0.19s, background 0.19s;
+}
+
+.tabcontainer__tab--active {
+  color: var(--tab-accent);
+  background: var(--tab-bg);
+  border-bottom: 3px solid var(--tab-accent);
+}
+
+.tabcontainer__content {
+  padding: 32px 32px 0 32px;
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.3em;
+  background: var(--tab-bg);
+  overflow-y: auto;
+}
+
+@media (max-width: 650px) {
+  .tabcontainer__content {
+    padding: 14px 5px 0 5px;
+  }
+}

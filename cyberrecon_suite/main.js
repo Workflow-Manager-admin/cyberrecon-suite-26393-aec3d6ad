@@ -303,9 +303,15 @@ ipcMain.handle('proxy-stop', async (_event) => {
   return await stopProxyServer();
 });
 
-// Get proxy sessions/timeline
+/**
+ * Get proxy session timeline (safe robust handler)
+ */
 ipcMain.handle('proxy-get-sessions', async () => {
-  return getProxySessions();
+  try {
+    return getProxySessions();
+  } catch (err) {
+    return { ok: false, timeline: [], error: String(err) };
+  }
 });
 
 // Replay a proxy session request
@@ -313,11 +319,17 @@ ipcMain.handle('proxy-replay-request', async (_event, params) => {
   return await replayProxyRequest(params);
 });
 
-// Clear all proxy session history (reset timeline)
+/**
+ * Clear all proxy session history (safe robust handler)
+ */
 ipcMain.handle('proxy-clear-sessions', async () => {
-  proxySessions = [];
-  lastProxySessionId = 0;
-  return { ok: true };
+  try {
+    proxySessions = [];
+    lastProxySessionId = 0;
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  }
 });
 
 

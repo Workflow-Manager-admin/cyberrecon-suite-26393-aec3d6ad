@@ -70,7 +70,7 @@ ipcMain.handle('ping', async (_event, ...args) => {
  * Only allows certain commands (extend allowedCommands as needed for safety).
  * Returns: { stdout, stderr, code }
  */
-const allowedCommands = ['echo']; // extend this array with safe/expected CLI commands
+const allowedCommands = ['echo', 'masscan', 'nuclei']; // extended with safe/expected CLI commands
 
 ipcMain.handle('run-cli-command', async (_event, params) => {
   try {
@@ -88,7 +88,7 @@ ipcMain.handle('run-cli-command', async (_event, params) => {
     const args = Array.isArray(params.args)
       ? params.args.filter(arg => typeof arg === 'string')
       : [];
-    const cmdline = [params.command, ...args].join(' ');
+    const cmdline = [params.command, ...args.map(escapeShellArg)].join(' ');
 
     return new Promise((resolve) => {
       exec(cmdline, { timeout: 30000, maxBuffer: 1024 * 200 }, (error, stdout, stderr) => {
@@ -104,6 +104,76 @@ ipcMain.handle('run-cli-command', async (_event, params) => {
     return { error: String(err), code: 500, stdout: '', stderr: '' };
   }
 });
+
+/**
+ * PUBLIC_INTERFACE
+ * IPC handler for running Masscan securely.
+ * Expects: { args?: string[] }
+ * Only runs masscan, returns: { stdout, stderr, code, error }
+ */
+ipcMain.handle('run-masscan', async (_event, params) => {
+  try {
+    // Validate input
+    const args = Array.isArray(params?.args)
+      ? params.args.filter(arg => typeof arg === 'string')
+      : [];
+    // For added security, only allow common masscan params, expand as required
+    // Optionally, add restrictive validation of flags here if necessary
+    const cmdline = ['masscan', ...args.map(escapeShellArg)].join(' ');
+    return await execPromise(cmdline, 120000); // up to 2 min for large scan
+  } catch (err) {
+    return { error: String(err), code: 500, stdout: '', stderr: '' };
+  }
+});
+
+/**
+ * PUBLIC_INTERFACE
+ * IPC handler for running Nuclei securely.
+ * Expects: { args?: string[] }
+ * Only runs nuclei, returns: { stdout, stderr, code, error }
+ */
+ipcMain.handle('run-nuclei', async (_event, params) => {
+  try {
+    // Validate input
+    const args = Array.isArray(params?.args)
+      ? params.args.filter(arg => typeof arg === 'string')
+      : [];
+    // Optionally: only allow --target, --template, etc. by flag validation
+    const cmdline = ['nuclei', ...args.map(escapeShellArg)].join(' ');
+    return await execPromise(cmdline, 120000);
+  } catch (err) {
+    return { error: String(err), code: 500, stdout: '', stderr: '' };
+  }
+});
+
+/**
+ * Helper: Sanitize/shell-escape argument for CLI
+ * Minimal, cross-platform (no, or few meta-chars allowed), prevents injection
+ */
+function escapeShellArg(arg) {
+  // Windows: wrap with double quotes, escape inner quotes.
+  if (process.platform === 'win32') {
+    return `"${String(arg).replace(/(["%])/g, '^$1')}"`;
+  }
+  // POSIX: wrap with single quotes, escape single inside
+  return `'${String(arg).replace(/'/g, `'\\''`)}'`;
+}
+
+/**
+ * Helper: Promise wrapper for exec, reusable for custom timeout/output size.
+ */
+function execPromise(cmd, timeoutMs = 30000) {
+  return new Promise((resolve) => {
+    exec(cmd, { timeout: timeoutMs, maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
+      resolve({
+        stdout,
+        stderr,
+        code: error ? (error.code || 1) : 0,
+        error: error ? error.message : null
+      });
+    });
+  });
+}
 
 // Here you can add more handlers for modules (recon, scan, etc.)
 // Example (uncomment and write implementation as needed)

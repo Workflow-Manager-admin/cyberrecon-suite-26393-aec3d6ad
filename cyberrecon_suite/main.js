@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, nativeTheme } = require('electron');
 const path = require('path');
+const { exec } = require('child_process'); // To run CLI commands securely
 
 // PUBLIC_INTERFACE
 function createWindow() {

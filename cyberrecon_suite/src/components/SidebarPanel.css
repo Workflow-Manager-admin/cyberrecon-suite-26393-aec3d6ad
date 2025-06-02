@@ -1,79 +1,55 @@
 :root {
-  --sidebarpanel-bg: var(--color-bg-panel, #24272f);
-  --sidebarpanel-width: 340px;
-  --sidebarpanel-overlay: rgba(30,32,38,0.92);
-  --sidebarpanel-border: 2px solid var(--color-accent50, #ffd699);
-  --sidebarpanel-shadow: -14px 0 32px #000b, 0 1.5px 0 #150b0450;
+  --sidebar-panel-bg: var(--color-bg-panel, #24272f);
+  --sidebar-panel-radius: 13px;
+  --sidebar-panel-border: 1.5px solid var(--border-color, #2f333a);
+  --sidebar-panel-accent: var(--color-accent, #ff9800);
 }
 
-.sidebarpanel {
+.sidebar-panel-backdrop {
   position: fixed;
-  top: 0;
-  right: 0;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: var(--overlay, rgba(30,32,38,0.97));
+  z-index: 1300;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  backdrop-filter: blur(4px);
+  transition: background 0.22s, backdrop-filter 0.18s;
+}
+.sidebar-panel {
+  width: 340px;
+  max-width: 98vw;
   height: 100vh;
-  min-height: 100vh;
-  background: var(--sidebarpanel-bg);
-  border-left: var(--sidebarpanel-border);
-  z-index: 1201;
-  box-shadow: var(--sidebarpanel-shadow);
+  background: var(--sidebar-panel-bg);
+  box-shadow: -5px 0 40px #000a, 0 2px 0 #150b0450;
+  border-left: var(--sidebar-panel-border);
+  border-radius: var(--sidebar-panel-radius) 0 0 var(--sidebar-panel-radius);
   display: flex;
   flex-direction: column;
-  padding-top: 0;
-  padding-bottom: 0;
-  will-change: right, box-shadow;
-  max-width: 97vw;
+  padding: 0 0 20px 0;
+  position: relative;
+  z-index: 1301;
   overflow-y: auto;
+  transition: right 0.23s;
+  outline: 2.5px solid rgba(255,152,0,0.05);
 }
 
-.sidebarpanel--closed {
-  pointer-events: none;
-}
-
-.sidebarpanel__overlay {
-  background: var(--sidebarpanel-overlay);
-  z-index: 1200;
-  position: fixed;
-  left: 0; top: 0; width: 100vw; height: 100vh;
-  opacity: 0;
-  transition: opacity 0.16s;
-  pointer-events: none;
-}
-.sidebarpanel__overlay--show {
-  opacity: 0.74;
-  pointer-events: auto;
-  transition: opacity 0.21s;
-}
-
-.sidebarpanel__close-btn {
+.sidebar-panel-close {
   position: absolute;
-  left: -74px;
-  top: 29px;
-  z-index: 10;
-  background: none !important;
-  box-shadow: none !important;
-  border-radius: 12px 0 0 12px;
-  font-size: 1.19em;
-  font-weight: 900;
-  min-width: 56px;
-  color: var(--color-accent);
-  outline: none;
-  border: 2px solid var(--color-accent50);
-  transition: background 0.17s;
+  right: 14px; top: 21px;
+  color: var(--sidebar-panel-accent);
+  background: none;
+  border: none;
+  border-radius: 5px;
+  font-size: 1.57em;
+  cursor: pointer;
+  z-index: 1330;
+  transition: color 0.14s, background 0.12s;
+  padding: 1px 10px 1px 6px;
 }
-.sidebarpanel__close-btn:focus, .sidebarpanel__close-btn:hover {
-  background: var(--color-accent50);
-  color: var(--color-bg-panel);
-}
-@media (max-width: 530px) {
-  .sidebarpanel {
-    width: 99vw !important;
-    min-width: 99vw !important;
-  }
-  .sidebarpanel__close-btn { left: -54vw }
-}
-.sidebarpanel__content {
-  padding: 36px 20px 22px 26px;
-  overflow-y: auto;
-  flex: 1;
-  min-width: 0;
+.sidebar-panel-close:hover, .sidebar-panel-close:focus-visible {
+  color: #ffd699;
+  background: rgba(255,152,0,0.11);
+  outline: 2px solid #ffa726;
+  outline-offset: 2px;
 }
